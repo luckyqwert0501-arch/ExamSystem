@@ -4,31 +4,104 @@
 <meta charset="utf-8"/>
 <title>普高精舍禪修班 線上題庫系統</title>
 <style>
-    body { font-family: "Noto Sans TC","PingFang TC",sans-serif; background: #fff8e1; margin: 0; padding: 20px; color: #3e2723; }
-    .card, .result-card { background: #fff3e0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 980px; margin: auto; }
-    .opt { margin: 8px 0; padding: 12px; border-radius: 10px; border: 1px solid #ffcc80; cursor: pointer; background: #ffe0b2; transition: 0.2s; }
-    .opt:hover:not(.disabled) { filter: brightness(1.05); }
-    .opt.right { background: #c8e6c9 !important; border-color: #81c784; }
-    .opt.wrong { background: #ffcdd2 !important; border-color: #e57373; }
-    .opt.disabled { pointer-events: none; opacity: 0.85; }
-    button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-    .btn { background: #ffe0b2; color: #3e2723; }
-    .btn.primary { background: #ffb74d; color: #3e2723; }
-    .btn:hover { filter: brightness(1.05); }
-    #msg.ok { color: #2e7d32; }
-    #msg.bad { color: #b71c1c; }
-    .tag, .badge { display: inline-block; border-radius: 8px; padding: 6px 10px; margin: 2px 6px 2px 0; color: #3e2723; }
+    body {
+        font-family: "Noto Sans TC","PingFang TC",sans-serif;
+        background: #fff8e1;
+        margin: 0;
+        padding: 20px;
+        color: #3e2723;
+    }
+    .card {
+        background: #fff3e0;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,.1);
+        max-width: 980px;
+        margin: auto;
+    }
+    h2 { margin:0 0 12px 0; }
+    .tag, .badge {
+        display: inline-block;
+        border-radius: 10px;
+        padding: 6px 10px;
+        margin: 2px 6px 2px 0;
+    }
     .tag { background: #ffe0b2; }
     .badge { background: #fff3e0; border: 1px solid #ffcc80; }
-    .progress-container { width: 100%; background: #fff3e0; border-radius: 10px; margin: 8px 0; height: 18px; overflow: hidden; border: 1px solid #ffcc80; }
-    .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #ffb74d, #ffcc80); border-radius: 10px; transition: width 0.3s ease; }
-    hr { border: none; border-top: 1px solid #ffcc80; margin: 16px 0; }
-    #resultModal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; padding: 16px; }
-    .result-card { max-width: 760px; width: 100%; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25); padding: 20px; }
+
+    /* 下拉選單 */
+    select {
+        background-color: #ffe0b2;
+        color: #3e2723;
+        border: 1px solid #ffcc80;
+        border-radius: 12px;
+        padding: 6px 12px;
+        margin-left: 6px;
+        transition: 0.2s;
+    }
+    select:hover { filter: brightness(1.05); }
+
+    /* 單選按鈕 */
+    input[type="radio"] { display: none; }
+    input[type="radio"] + label {
+        display: inline-block;
+        padding: 6px 14px;
+        margin-right: 6px;
+        border-radius: 12px;
+        background-color: #fff3e0;
+        border: 1px solid #ffcc80;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    input[type="radio"]:checked + label {
+        background-color: #ffb74d;
+        color: #3e2723;
+        border-color: #ffb74d;
+    }
+    input[type="radio"] + label:hover { filter: brightness(1.05); }
+
+    .opt {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        transition: .15s;
+    }
+    .opt.right { background: #c8e6c9 !important; border-color: #81c784; }
+    .opt.wrong { background: #ffcdd2 !important; border-color: #e57373; }
+    .opt.disabled { pointer-events: none; opacity: .9; }
+
+    button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; }
+    .btn { background: #ffe0b2; }
+    .btn.primary { background: #ffb74d; color: #3e2723; }
+
+    #msg.ok { color: #2e7d32; }
+    #msg.bad { color: #b71c1c; }
+
+    hr { border: none; border-top: 1px solid #ffd180; margin: 16px 0; }
+
+    #resultModal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .result-card {
+        background: #fff3e0;
+        max-width: 760px;
+        width: 100%;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        padding: 20px;
+    }
     .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .kpi { background: #fff8e1; border: 1px solid #ffcc80; border-radius: 10px; padding: 10px; text-align:center; }
+    .kpi { background: #fff8e1; border: 1px solid #ffcc80; border-radius: 10px; padding: 10px; }
     .table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
-    .table th, .table td { border: 1px solid #ffd180; padding: 8px; text-align: left; color: #3e2723; }
+    .table th, .table td { border: 1px solid #ffd180; padding: 8px; text-align: left; }
     .table th { background: #fff3e0; }
     @media (max-width: 640px) { .result-grid { grid-template-columns: 1fr; } }
 </style>
@@ -41,9 +114,6 @@
     <span class="badge">目前：<b id="posTag">0 / 0</b></span>
     <span class="badge">已答對：<b id="okTag">0</b></span>
 </div>
-<div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
-</div>
 <div style="margin:6px 0;">
     <label>班級：
         <select id="classSelect">
@@ -55,13 +125,16 @@
     </label>
 </div>
 <div>
-    <label><input type="radio" name="mode" value="sequential" checked>依順序</label>
-    <label><input type="radio" name="mode" value="random">隨機</label>
+    <input type="radio" id="modeSeq" name="mode" value="sequential" checked>
+    <label for="modeSeq">依順序</label>
+    <input type="radio" id="modeRand" name="mode" value="random">
+    <label for="modeRand">隨機</label>
     <select id="limit">
-        <option value="all">全部</option>
         <option value="5">5</option>
         <option value="10">10</option>
+        <option value="15">15</option>
         <option value="20" selected>20</option>
+        <option value="all">全部</option>
     </select>
     <button class="btn primary" id="start">開始作答</button>
     <button class="btn" id="reset">重置</button>
@@ -98,7 +171,7 @@
         </div>
     </div>
 </div>
-
+    
 <script>
 const DATA = {
 "初級班":[
@@ -288,3 +361,4 @@ document.getElementById("closeResult").onclick=()=>{document.getElementById("res
 </script>
 </body>
 </html>
+
