@@ -4,344 +4,145 @@
 <meta charset="UTF-8">
 <title>普高精舍禪修班 線上題庫系統</title>
 <style>
-    body {
-        font-family: "Noto Sans TC","PingFang TC",sans-serif;
-        background: #fff8f0;
-        color: #5a3e1b;
-        margin: 0;
-        padding: 20px;
-    }
-    h2 {
-        text-align: center;
-        color: #7b4b1f;
-    }
-    .card {
-        background: #fff3e0;
-        max-width: 1000px;
-        margin: 20px auto;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,.1);
-    }
-    .tag, .badge {
-        display: inline-block;
-        background: #fff0d1;
-        border: 1px solid #ffd699;
-        border-radius: 12px;
-        padding: 6px 12px;
-        margin: 2px 6px 2px 0;
-        font-weight: 500;
-    }
-    input[type="checkbox"], input[type="radio"] {
-        margin-right: 4px;
-    }
+    body { font-family: Arial, sans-serif; background:#fff8f0; color:#5a3e1b; }
     .btn {
-        padding: 10px 16px;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        margin-right: 6px;
-        margin-top: 6px;
-        font-weight: 500;
+        padding:10px 14px; margin:4px; border-radius:12px; border:none; cursor:pointer; font-weight:bold;
     }
-    .btn.primary {
-        background: #b87333;
-        color: #fff;
-    }
-    .btn.secondary {
-        background: #ffd699;
-        color: #5a3e1b;
-    }
-    .opt {
-        margin: 8px 0;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px solid #d9a066;
-        cursor: pointer;
-        transition: 0.15s;
-        background: #fff8f0;
-    }
-    .opt.right {
-        background: #cce5b0 !important;
-        border-color: #a5d6a7;
-    }
-    .opt.wrong {
-        background: #f9c0c0 !important;
-        border-color: #e57373;
-    }
-    .opt.disabled {
-        pointer-events: none;
-        opacity: 0.9;
-    }
-    #msg.ok {
-        color: #2e7d32;
-    }
-    #msg.bad {
-        color: #b71c1c;
-    }
-    #quiz { display:none; margin-top: 16px; }
-    #resultModal {
-        position: fixed;
-        inset:0;
-        background: rgba(0,0,0,0.4);
-        display:none;
-        align-items:center;
-        justify-content:center;
-        padding:16px;
-    }
-    .result-card {
-        background: #fff3e0;
-        max-width: 800px;
-        width: 100%;
-        border-radius: 14px;
-        box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        padding: 20px;
-    }
-    .result-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0,1fr));
-        gap:10px;
-    }
-    .kpi {
-        background: #fff0d1;
-        border: 1px solid #ffd699;
-        border-radius: 12px;
-        padding: 10px;
-        text-align:center;
-        font-weight: 500;
-    }
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-    }
-    .table th, .table td {
-        border: 1px solid #ffd699;
-        padding: 8px;
-        text-align: left;
-    }
-    .table th {
-        background: #fff0d1;
-    }
+    .btn.primary { background:#ffd699; color:#5a3e1b; }
+    .btn.secondary { background:#fff0d1; color:#5a3e1b; border:1px solid #ffd699; }
+    .btn:hover { opacity:0.85; }
+    #quizDiv { display:none; margin-top:20px; }
+    #question { margin-bottom:12px; font-size:18px; }
+    .answerBtn { display:block; margin:6px 0; padding:8px 12px; border-radius:12px; border:1px solid #ffd699; background:#fff0d1; color:#5a3e1b; cursor:pointer; text-align:left; }
+    .stats { margin-top:12px; font-size:16px; padding:8px 12px; border-radius:12px; background:#fff0d1; border:1px solid #ffd699; display:inline-block; }
 </style>
 </head>
 <body>
-<div class="card">
-    <h2>普高精舍禪修班 線上題庫系統</h2>
-    <div>
-        <span class="tag">共 <b id="totalTag">0</b> 題</span>
-        <span class="badge">目前：<b id="posTag">0 / 0</b></span>
-        <span class="badge">已答對：<b id="okTag">0</b></span>
-    </div>
-    <div style="margin:10px 0;">
-        <label><input type="checkbox" class="classSelect" value="初級班" checked> 初級班</label>
-        <label><input type="checkbox" class="classSelect" value="中級班" checked> 中級班</label>
-        <label><input type="checkbox" class="classSelect" value="高級班" checked> 高級班</label>
-        <label><input type="checkbox" class="classSelect" value="研經班" checked> 研經班</label>
-    </div>
-    <div style="margin:10px 0;">
-        <label><input type="radio" name="mode" value="sequential" checked> 依順序</label>
-        <label><input type="radio" name="mode" value="random"> 隨機</label>
-        <select id="limit">
-            <option value="all">全部</option>
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-        </select>
-        <button class="btn primary" id="start">開始作答</button>
-        <button class="btn secondary" id="reset">重置</button>
-    </div>
-    <div id="quiz">
-        <div id="meta"></div>
-        <h3 id="q"></h3>
-        <div id="opts"></div>
-        <div id="msg"></div>
-        <div style="margin-top:8px;">
-            <button class="btn secondary" id="prev">上一題</button>
-            <button class="btn secondary" id="reveal">看答案</button>
-            <button class="btn secondary" id="next">下一題</button>
-        </div>
-    </div>
+
+<h2>題庫測驗</h2>
+
+<!-- 班級下拉選單 -->
+<label>選擇班級：</label>
+<select id="classSelect" class="btn secondary">
+    <option value="">請選擇班級</option>
+    <option value="初級班">初級班</option>
+    <option value="中級班">中級班</option>
+    <option value="高級班">高級班</option>
+    <option value="研經班">研經班</option>
+</select>
+
+<!-- 題目模式 -->
+<div style="margin-top:10px;">
+    <label class="btn secondary">
+        <input type="radio" name="mode" value="order" checked> 依順序
+    </label>
+    <label class="btn secondary">
+        <input type="radio" name="mode" value="random"> 隨機
+    </label>
 </div>
 
-<div id="resultModal">
-    <div class="result-card">
-        <h3>作答結果</h3>
-        <div class="result-grid">
-            <div class="kpi">總題數：<b id="rTotal">0</b></div>
-            <div class="kpi">答對數：<b id="rCorrect">0</b></div>
-            <div class="kpi">正確率：<b id="rAcc">0%</b></div>
-        </div>
-        <h4 style="margin-top:12px;">錯題回顧</h4>
-        <table class="table" id="rTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>題目</th>
-                    <th>你的答案</th>
-                    <th>正解</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div style="text-align:right;margin-top:12px;">
-            <button class="btn primary" id="closeResult">關閉</button>
-        </div>
-    </div>
+<!-- 題目數量限制 -->
+<div style="margin-top:10px;">
+    <label class="btn secondary">
+        題數：
+        <select id="limit" class="btn secondary">
+            <option value="all">全部</option>
+            <option value="5">5題</option>
+            <option value="10">10題</option>
+            <option value="15">15題</option>
+            <option value="20">20題</option>
+        </select>
+    </label>
+</div>
+
+<!-- 開始測驗按鈕 -->
+<div style="margin-top:10px;">
+    <button id="start" class="btn primary">開始測驗</button>
+</div>
+
+<!-- 題目區 -->
+<div id="quizDiv">
+    <div id="question"></div>
+    <div id="answers"></div>
+    <div class="stats" id="stats">參考 0 題，目前 0/0 題，答對 0 題</div>
 </div>
 
 <script>
-// ================== 示範題庫 ==================
+// 普高精舍禪修班 線上題庫系統
 const DATA = {
     "初級班":[
-        {question:"佛陀的本名是？",options:["悉達多","釋迦牟尼","阿難","摩訶迦葉"],answer:2},
-        {question:"佛教創立在哪一國？",options:["印度","中國","西藏","日本"],answer:1},
-        {question:"四聖諦包含哪個？",options:["苦、集、滅、道","地、水、火、風","仁、義、禮、智","信、願、行、德"],answer:1},
-        {question:"八正道中哪個不屬於心法？",options:["正見","正念","正語","正定"],answer:3},
-        {question:"佛教的三寶是？",options:["佛、法、僧","佛、戒、慧","法、僧、菩薩","佛、法、僧寶"],answer:1},
-        {question:"佛陀最初的職業是？",options:["王子","商人","牧羊人","僧侶"],answer:1},
-        {question:"涅槃的意義為？",options:["永恆快樂","解脫生死","成佛","修行"],answer:2},
-        {question:"哪一位為佛陀的主要弟子？",options:["阿難","孔子","老子","達摩"],answer:1},
-        {question:"佛教的主要經典是？",options:["金剛經","道德經","論語","聖經"],answer:1},
-        {question:"佛教中不殺生指的是？",options:["戒律","八正道","禪修","三寶"],answer:1},
-        {question:"佛教起源約西元前？",options:["563年","623年","500年","400年"],answer:1},
-        {question:"佛教最高境界為？",options:["涅槃","成佛","菩薩","六道輪迴"],answer:1},
-        {question:"佛教五戒中不包括？",options:["不殺生","不偷盜","不飲酒","不打坐"],answer:4},
-        {question:"佛教的戒律主要依據？",options:["律藏","經藏","論藏","心經"],answer:1},
-        {question:"佛教初期僧團的組成是？",options:["比丘","比丘尼","居士","菩薩"],answer:1},
-        {question:"佛教中智慧的象徵是？",options:["法輪","蓮花","佛像","菩薩"],answer:1},
-        {question:"佛教中六道之一是？",options:["地獄道","天堂","天界","極樂"],answer:1},
-        {question:"佛教中最早的法師是？",options:["舍利弗","阿難","釋迦牟尼","摩訶迦葉"],answer:1},
-        {question:"佛教中重要節日是？",options:["浴佛節","中秋節","端午節","春節"],answer:1},
-        {question:"佛教中重要的寺廟是？",options:["靈隱寺","故宮","布達拉宮","龍山寺"],answer:1}
+        {q:"1+1=?", a:["1","2","3","4"], correct:1},
+        {q:"台灣首都是哪裡?", a:["台北","台中","高雄","台南"], correct:0},
+        {q:"太陽從哪裡升起?", a:["西","東","南","北"], correct:1},
+        {q:"水的化學式?", a:["H2O","CO2","O2","NaCl"], correct:0},
+        {q:"五角星有幾個角?", a:["3","4","5","6"], correct:2},
+        {q:"香蕉是什麼顏色?", a:["紅","黃","綠","藍"], correct:1},
+        {q:"哪個是水果?", a:["馬鈴薯","蘋果","胡蘿蔔","白菜"], correct:1},
+        {q:"貓會叫什麼聲音?", a:["汪汪","喵喵","咩咩","咕咕"], correct:1},
+        {q:"地球是圓的嗎?", a:["是","否","不確定","看心情"], correct:0},
+        {q:"太空中有空氣嗎?", a:["有","沒有","有點","不知道"], correct:1}
     ],
     "中級班":[
-        {question:"六波羅蜜中不包括？",options:["布施","持戒","忍辱","禪定"],answer:4},
-        {question:"四念處不包括？",options:["身念處","受念處","心念處","口念處"],answer:4},
-        {question:"佛教三法印是？",options:["諸行無常、諸法無我、涅槃寂靜","苦、集、滅、道","因、緣、果","生、老、病、死"],answer:1},
-        {question:"中觀派的代表人物是？",options:["龍樹","鳩摩羅什","玄奘","曇無讖"],answer:1},
-        {question:"阿含經屬於？",options:["小乘經典","大乘經典","密宗典籍","禪宗典籍"],answer:1},
-        {question:"三乘佛教包括？",options:["聲聞、緣覺、菩薩","比丘、比丘尼、居士","律、經、論","地、水、火"],answer:1},
-        {question:"佛教五戒的核心是？",options:["戒殺、戒盜、戒淫、戒妄、戒酒","忍辱","布施","禪定"],answer:1},
-        {question:"瑜伽行派的主張是？",options:["唯識","中觀","法相","禪宗"],answer:1},
-        {question:"佛教密宗主要流行於？",options:["西藏","印度","中國","日本"],answer:1},
-        {question:"《金剛經》的核心是？",options:["般若智慧","戒律","禪定","菩薩行"],answer:1},
-        {question:"禪宗強調？",options:["頓悟","循序漸進","持戒","念佛"],answer:1},
-        {question:"佛教中菩薩道的主要目標？",options:["利益眾生","涅槃","自利","布施"],answer:1},
-        {question:"《心經》的核心是？",options:["空","有","生","滅"],answer:1},
-        {question:"《法華經》主要思想是？",options:["一乘法","二乘法","三乘法","四乘法"],answer:1},
-        {question:"佛教念佛法門屬於？",options:["淨土宗","禪宗","密宗","天台宗"],answer:1},
-        {question:"佛教天台宗創始人是？",options:["智顗","慧能","玄奘","達摩"],answer:1},
-        {question:"佛教禪宗六祖是？",options:["慧能","達摩","弘忍","智顗"],answer:1},
-        {question:"法相宗的核心理論是？",options:["唯識","空","緣起","中道"],answer:1},
-        {question:"密宗三主要灌頂包括？",options:["身、語、意","布施、持戒、忍辱","禪定、慧觀、忍辱","法輪、蓮花、佛像"],answer:1},
-        {question:"佛教中六度波羅蜜之一是？",options:["精進","布施","持戒","忍辱"],answer:1}
+        {q:"光速是多少?", a:["3x10^8 m/s","3x10^6 m/s","3x10^10 m/s","3x10^5 m/s"], correct:0},
+        {q:"水的沸點是多少度C?", a:["90","95","100","105"], correct:2},
+        {q:"地球半徑約多少?", a:["6000km","6400km","7000km","8000km"], correct:1},
+        {q:"中國的首都是?", a:["上海","北京","廣州","香港"], correct:1},
+        {q:"世界最高山?", a:["喜馬拉雅","阿爾卑斯","安第斯","落基山"], correct:0}
     ],
     "高級班":[
-        {question:"龍樹的中論核心思想是？",options:["空","緣起","佛性","菩薩"],answer:1},
-        {question:"瑜伽行派主張唯識論的對象是？",options:["心識","身體","佛像","經典"],answer:1},
-        {question:"大乘佛教的主要經典包括？",options:["華嚴經、法華經、般若經","阿含經、律藏","中觀論、十地經","金剛經、法華經"],answer:1},
-        {question:"中觀派提出的“空”的意義是？",options:["一切法無自性","無常","涅槃","輪迴"],answer:1},
-        {question:"《大智度論》的作者是？",options:["鳩摩羅什","龍樹","慧能","達摩"],answer:1},
-        {question:"唯識宗強調？",options:["一切唯心所現","緣起性空","持戒布施","禪定觀想"],answer:1},
-        {question:"菩薩道的終極目標？",options:["成佛","涅槃","阿羅漢","布施"],answer:1},
-        {question:"華嚴宗的代表人物？",options:["法藏","慧能","智顗","達摩"],answer:1},
-        {question:"禪宗重視哪種修行方法？",options:["打坐參禪","持戒","布施","誦經"],answer:1},
-        {question:"淨土宗主張依靠？",options:["阿彌陀佛的願力","自我修行","打坐","誦經"],answer:1},
-        {question:"天台宗的主要教義？",options:["三止三觀","禪定","布施","菩薩道"],answer:1},
-        {question:"法相宗的主要經典？",options:["成唯識論","中論","華嚴經","法華經"],answer:1},
-        {question:"密宗的核心修法？",options:["灌頂","打坐","誦經","布施"],answer:1},
-        {question:"六波羅蜜中，布施主要是？",options:["利益他人","自利","智慧","忍辱"],answer:1},
-        {question:"佛教戒律的核心是？",options:["不殺、不盜、不淫、不妄、不酒","布施","持戒","忍辱"],answer:1},
-        {question:"中觀派強調的因果法則是？",options:["緣起","業報","空","六道"],answer:1},
-        {question:"菩薩修行的重要法門是？",options:["六度波羅蜜","戒律","禪定","誦經"],answer:1},
-        {question:"《金剛經》的核心教義是？",options:["般若波羅蜜多","涅槃","阿羅漢","禪定"],answer:1},
-        {question:"佛教中“無我”的觀念是？",options:["諸法無我","自我實現","輪迴","布施"],answer:1},
-        {question:"《華嚴經》的主要思想是？",options:["一乘法","二乘法","三乘法","四乘法"],answer:1}
+        {q:"相對論提出者?", a:["牛頓","愛因斯坦","伽利略","哥白尼"], correct:1},
+        {q:"光的波粒二象性提出者?", a:["普朗克","牛頓","愛因斯坦","法拉第"], correct:2},
+        {q:"DNA 雙螺旋模型?", a:["華森&克里克","孟德爾","居里夫人","達爾文"], correct:0},
+        {q:"第一個登月人?", a:["阿姆斯特朗","加加林","柯林斯","艾德林"], correct:0},
+        {q:"化學元素氧符號?", a:["O","C","H","N"], correct:0}
     ],
     "研經班":[
-        {question:"《大般若經》共有多少卷？",options:["600卷","100卷","300卷","200卷"],answer:1},
-        {question:"《法華經》強調哪個概念？",options:["一乘法","二乘法","三乘法","四乘法"],answer:1},
-        {question:"《涅槃經》主要闡述？",options:["佛性","般若","禪定","布施"],answer:1},
-        {question:"龍樹提出哪部論述“中道”？",options:["中論","大智度論","成唯識論","華嚴經"],answer:1},
-        {question:"唯識宗主要研究？",options:["心識","身體","佛像","經典"],answer:1},
-        {question:"大乘佛教三主要部派？",options:["中觀、法相、華嚴","阿含、律、經","禪宗、淨土、密宗","天台、禪、密宗"],answer:1},
-        {question:"密宗的三主要灌頂？",options:["身、語、意","布施、持戒、忍辱","禪定、慧觀、忍辱","法輪、蓮花、佛像"],answer:1},
-        {question:"《成唯識論》的作者？",options:["窺基","龍樹","鳩摩羅什","玄奘"],answer:1},
-        {question:"華嚴宗的代表作是？",options:["華嚴經","法華經","中論","金剛經"],answer:1},
-        {question:"佛教密教的核心理念？",options:["即身成佛","涅槃","阿羅漢","布施"],answer:1},
-        {question:"天台宗的三止三觀是？",options:["止觀結合","禪定","布施","誦經"],answer:1},
-        {question:"禪宗的重要修法是？",options:["打坐參禪","誦經","布施","持戒"],answer:1},
-        {question:"淨土宗依靠？",options:["阿彌陀佛願力","自我修行","打坐","誦經"],answer:1},
-        {question:"佛教六度波羅蜜之一是？",options:["布施","持戒","忍辱","禪定"],answer:1},
-        {question:"佛教三法印之一是？",options:["諸法無我","因果","涅槃","善惡"],answer:1},
-        {question:"阿含經主要屬於？",options:["小乘經典","大乘經典","密宗典籍","禪宗典籍"],answer:1},
-        {question:"《心經》核心思想？",options:["空","有","生","滅"],answer:1},
-        {question:"《金剛經》強調？",options:["般若智慧","持戒","布施","禪定"],answer:1},
-        {question:"佛教中菩薩道最重要的是？",options:["利他","自利","智慧","布施"],answer:1},
-        {question:"佛教中“空”的核心意義？",options:["一切法無自性","自我","永恆","常住"],answer:1}
+        {q:"佛教四聖諦順序是?", a:["苦集滅道","道集滅苦","滅苦集道","集苦道滅"], correct:0},
+        {q:"八正道包括哪一項?", a:["正見","正睡","正玩","正煮"], correct:0},
+        {q:"佛教輪迴概念?", a:["生死","遊戲","工作","考試"], correct:0},
+        {q:"佛陀原名?", a:["悉達多","阿難","迦葉","摩訶"], correct:0},
+        {q:"佛教三寶是?", a:["佛法僧","天地人","日月星","風火水"], correct:0}
     ]
 };
 
-// ================== 功能 ==================
 let QUIZ=[], pos=0, correct=0, userAns=[];
-const totalTag=document.getElementById("totalTag");
-const posTag=document.getElementById("posTag");
-const okTag=document.getElementById("okTag");
-const quizDiv=document.getElementById("quiz");
-const qEl=document.getElementById("q");
-const optsEl=document.getElementById("opts");
-const msgEl=document.getElementById("msg");
 
-function updateStats(){
-    totalTag.textContent=QUIZ.length;
-    posTag.innerHTML=`${pos+1} / ${QUIZ.length}`;
-    okTag.textContent=correct;
-}
+const quizDiv=document.getElementById("quizDiv");
+const questionDiv=document.getElementById("question");
+const answersDiv=document.getElementById("answers");
+const statsDiv=document.getElementById("stats");
 
 function renderQuestion(){
-    if(pos<0) pos=0;
-    if(pos>=QUIZ.length) pos=QUIZ.length-1;
-    const q=QUIZ[pos];
-    qEl.textContent=q.question;
-    optsEl.innerHTML="";
-    q.options.forEach((o,i)=>{
-        const div=document.createElement("div");
-        div.className="opt";
-        div.textContent=o;
-        div.onclick=()=>selectOption(i,div);
-        optsEl.appendChild(div);
+    if(pos>=QUIZ.length){
+        questionDiv.innerHTML="測驗結束！";
+        answersDiv.innerHTML="";
+        return;
+    }
+    let q=QUIZ[pos];
+    questionDiv.innerHTML=(pos+1)+". "+q.q;
+    answersDiv.innerHTML="";
+    q.a.forEach((ans,i)=>{
+        let btn=document.createElement("button");
+        btn.className="answerBtn";
+        btn.textContent=ans;
+        btn.onclick=()=>checkAnswer(i);
+        answersDiv.appendChild(btn);
     });
-    msgEl.textContent="";
-    updateStats();
+    statsDiv.textContent=`參考 ${QUIZ.length} 題，目前 ${pos}/${QUIZ.length} 題，答對 ${correct} 題`;
 }
 
-function selectOption(i,div){
-    if(div.classList.contains("disabled")) return;
-    const q=QUIZ[pos];
-    const correctIdx=q.answer-1;
-    if(i===correctIdx){
-        div.classList.add("right");
-        correct++;
-        msgEl.textContent="答對了！";
-        msgEl.className="ok";
-    } else {
-        div.classList.add("wrong");
-        msgEl.textContent=`答錯，正確答案：${q.options[correctIdx]}`;
-        msgEl.className="bad";
-    }
-    userAns[pos]=i;
-    Array.from(optsEl.children).forEach(d=>d.classList.add("disabled"));
-    updateStats();
+function checkAnswer(idx){
+    if(idx===QUIZ[pos].correct) correct++;
+    userAns.push(idx);
+    pos++;
+    renderQuestion();
 }
 
 document.getElementById("start").onclick=()=>{
-    const selectedClasses=Array.from(document.querySelectorAll(".classSelect:checked")).map(c=>c.value);
-    if(selectedClasses.length===0){ alert("請選擇至少一個班級"); return; }
+    const selectedClass=document.getElementById("classSelect").value;
+    if(!selectedClass){ alert("請選擇班級"); return; }
     QUIZ=[];
-    selectedClasses.forEach(c=>{
-        QUIZ=QUIZ.concat(DATA[c]);
-    });
+    QUIZ=QUIZ.concat(DATA[selectedClass]);
     const mode=document.querySelector('input[name="mode"]:checked').value;
     if(mode==="random") QUIZ=QUIZ.sort(()=>Math.random()-0.5);
     const limit=document.getElementById("limit").value;
@@ -350,29 +151,7 @@ document.getElementById("start").onclick=()=>{
     quizDiv.style.display="block";
     renderQuestion();
 };
-
-document.getElementById("next").onclick=()=>{
-    if(pos<QUIZ.length-1){ pos++; renderQuestion(); }
-};
-document.getElementById("prev").onclick=()=>{
-    if(pos>0){ pos--; renderQuestion(); }
-};
-document.getElementById("reveal").onclick=()=>{
-    const q=QUIZ[pos];
-    const correctIdx=q.answer-1;
-    Array.from(optsEl.children).forEach((d,i)=>{
-        d.classList.remove("wrong");
-        d.classList.add(i===correctIdx?"right":"disabled");
-    });
-    msgEl.textContent=`正確答案：${q.options[correctIdx]}`;
-    msgEl.className="ok";
-};
-document.getElementById("reset").onclick=()=>{
-    quizDiv.style.display="none";
-    pos=0; correct=0; userAns=[];
-    totalTag.textContent=0; posTag.textContent="0 / 0"; okTag.textContent=0;
-};
 </script>
+
 </body>
 </html>
-
