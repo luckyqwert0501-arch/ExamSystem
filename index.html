@@ -4,67 +4,31 @@
 <meta charset="utf-8"/>
 <title>普高精舍禪修班 線上題庫系統</title>
 <style>
-    body {
-        font-family: "Noto Sans TC","PingFang TC",sans-serif;
-        background: #fff8e1;
-        margin: 0;
-        padding: 20px;
-        color: #3e2723;
-    }
-    .card {
-        background: #fff3e0;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,.1);
-        max-width: 980px;
-        margin: auto;
-    }
-    .opt {
-        margin: 10px 0;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        cursor: pointer;
-        transition: .15s;
-    }
+    body { font-family: "Noto Sans TC","PingFang TC",sans-serif; background: #fff8e1; margin: 0; padding: 20px; color: #3e2723; }
+    .card, .result-card { background: #fff3e0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 980px; margin: auto; }
+    .opt { margin: 8px 0; padding: 12px; border-radius: 10px; border: 1px solid #ffcc80; cursor: pointer; background: #ffe0b2; transition: 0.2s; }
+    .opt:hover:not(.disabled) { filter: brightness(1.05); }
     .opt.right { background: #c8e6c9 !important; border-color: #81c784; }
     .opt.wrong { background: #ffcdd2 !important; border-color: #e57373; }
-    .opt.disabled { pointer-events: none; opacity: .9; }
-    button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; }
-    .btn { background: #ffe0b2; }
+    .opt.disabled { pointer-events: none; opacity: 0.85; }
+    button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn { background: #ffe0b2; color: #3e2723; }
     .btn.primary { background: #ffb74d; color: #3e2723; }
+    .btn:hover { filter: brightness(1.05); }
     #msg.ok { color: #2e7d32; }
     #msg.bad { color: #b71c1c; }
-    .tag, .badge {
-        display: inline-block;
-        border-radius: 8px;
-        padding: 6px 10px;
-        margin: 2px 6px 2px 0;
-    }
+    .tag, .badge { display: inline-block; border-radius: 8px; padding: 6px 10px; margin: 2px 6px 2px 0; color: #3e2723; }
     .tag { background: #ffe0b2; }
     .badge { background: #fff3e0; border: 1px solid #ffcc80; }
-    hr { border: none; border-top: 1px solid #ffd180; margin: 16px 0; }
-    #resultModal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.4);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
-    }
-    .result-card {
-        background: #fff3e0;
-        max-width: 760px;
-        width: 100%;
-        border-radius: 14px;
-        box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        padding: 20px;
-    }
+    .progress-container { width: 100%; background: #fff3e0; border-radius: 10px; margin: 8px 0; height: 18px; overflow: hidden; border: 1px solid #ffcc80; }
+    .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #ffb74d, #ffcc80); border-radius: 10px; transition: width 0.3s ease; }
+    hr { border: none; border-top: 1px solid #ffcc80; margin: 16px 0; }
+    #resultModal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; padding: 16px; }
+    .result-card { max-width: 760px; width: 100%; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25); padding: 20px; }
     .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .kpi { background: #fff8e1; border: 1px solid #ffcc80; border-radius: 10px; padding: 10px; }
+    .kpi { background: #fff8e1; border: 1px solid #ffcc80; border-radius: 10px; padding: 10px; text-align:center; }
     .table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
-    .table th, .table td { border: 1px solid #ffd180; padding: 8px; text-align: left; }
+    .table th, .table td { border: 1px solid #ffd180; padding: 8px; text-align: left; color: #3e2723; }
     .table th { background: #fff3e0; }
     @media (max-width: 640px) { .result-grid { grid-template-columns: 1fr; } }
 </style>
@@ -76,6 +40,9 @@
     <span class="tag">共 <b id="totalTag">0</b> 題</span>
     <span class="badge">目前：<b id="posTag">0 / 0</b></span>
     <span class="badge">已答對：<b id="okTag">0</b></span>
+</div>
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
 </div>
 <div style="margin:6px 0;">
     <label>班級：
@@ -134,93 +101,94 @@
 
 <script>
 const DATA = {
-    "初級班": [
-        {"question":"佛教三寶是指什麼？","options":["佛、法、僧","佛、法、道","佛、菩薩、僧","佛、禪、僧"],"answer":1},
-        {"question":"四聖諦第一諦是？","options":["苦諦","集諦","滅諦","道諦"],"answer":1},
-        {"question":"八正道的第一條是？","options":["正見","正思惟","正語","正業"],"answer":1},
-        {"question":"佛陀的原名是？","options":["悉達多","釋迦","阿難","摩訶"],"answer":1},
-        {"question":"佛教的根本經典為？","options":["大藏經","金剛經","法華經","阿含經"],"answer":4},
-        {"question":"佛教的核心理念是？","options":["慈悲喜捨","因果報應","禪定修行","無常無我"],"answer":4},
-        {"question":"八苦包括何者？","options":["生老病死等八種苦","生死苦","財富痛苦","一切痛苦"],"answer":1},
-        {"question":"佛教修行者稱為？","options":["出家人","居士","比丘","以上皆是"],"answer":4},
-        {"question":"禪宗最重視什麼？","options":["打坐","念佛","誦經","布施"],"answer":1},
-        {"question":"佛陀出生地在哪裡？","options":["藍毗尼","鹿野苑","菩提樹下","拘薩羅"],"answer":1},
-        {"question":"佛教主要的修行目的為？","options":["成佛","長壽","修福報","積功德"],"answer":1},
-        {"question":"佛教五戒不包括？","options":["不殺生","不偷盜","不飲酒","不食肉"],"answer":4},
-        {"question":"佛教的最高境界是？","options":["涅槃","阿羅漢","菩薩","悟道"],"answer":1},
-        {"question":"小乘佛教又稱？","options":["上座部佛教","大乘佛教","禪宗","密宗"],"answer":1},
-        {"question":"大乘佛教主要經典為？","options":["般若經","阿含經","四十二章經","金剛經"],"answer":1},
-        {"question":"佛教禪修的主要目的是？","options":["覺悟","祈福","消災","修行功德"],"answer":1},
-        {"question":"佛教的因果法則稱為？","options":["業","命運","福報","道"],"answer":1},
-        {"question":"佛教稱時間無常為？","options":["無常","無我","涅槃","空"],"answer":1},
-        {"question":"佛教中‘空’的含義？","options":["無自性","沒有佛","空間","無物"],"answer":1},
-        {"question":"佛教重要節日‘佛誕日’是？","options":["四月八日","五月初五","七月十五","八月十五"],"answer":1}
-    ],
-    "中級班": [
-        {"question":"阿含經屬於哪類佛經？","options":["小乘","大乘","密宗","禪宗"],"answer":1},
-        {"question":"佛教的十二因緣第一個是？","options":["無明","行","識","名色"],"answer":1},
-        {"question":"菩薩道的核心精神是？","options":["利他","自利","禪定","智慧"],"answer":1},
-        {"question":"《金剛經》強調什麼觀念？","options":["空性","戒律","禪定","菩提心"],"answer":1},
-        {"question":"四無量心不包括？","options":["慈","悲","喜","忍"],"answer":4},
-        {"question":"佛教中的‘五蘊’是？","options":["色、受、想、行、識","生、老、病、死、苦","地、水、火、風、空","身、語、意、慧、定"],"answer":1},
-        {"question":"佛教中‘涅槃’的意思是？","options":["超越生死","長壽","福報圓滿","布施功德"],"answer":1},
-        {"question":"小乘佛教重視哪種修行？","options":["自覺","普渡眾生","念佛","祈福"],"answer":1},
-        {"question":"大乘佛教重視什麼？","options":["菩薩行","苦行","禪定","福德"],"answer":1},
-        {"question":"《法華經》的主題是？","options":["一乘成佛","四聖諦","禪修","戒律"],"answer":1},
-        {"question":"佛教中‘三身’是？","options":["法身、報身、應身","佛、法、僧","色、受、想","生、老、病"],"answer":1},
-        {"question":"佛教‘因緣果報’指的是？","options":["因果律","福報","禪定","戒律"],"answer":1},
-        {"question":"阿含經主要記錄誰的言行？","options":["釋迦牟尼佛","菩薩","僧伽","羅漢"],"answer":1},
-        {"question":"佛教‘四念處’的內容不包含？","options":["身","受","想","福"],"answer":4},
-        {"question":"佛教‘八正道’中‘正業’是？","options":["行善","打坐","念佛","誦經"],"answer":1},
-        {"question":"佛教修行的三學是？","options":["戒、定、慧","禪、定、慧","戒、禪、智慧","戒、福、慧"],"answer":1},
-        {"question":"佛教中‘禪定’的目的？","options":["心無罣礙","功德增長","祈福","布施"],"answer":1},
-        {"question":"菩薩行六度中的‘布施’屬於？","options":["波羅蜜","四聖諦","八正道","五戒"],"answer":1},
-        {"question":"佛教戒律的根本目的？","options":["止惡行善","修福報","禪定","布施"],"answer":1}
-    ],
-    "高級班": [
-        {"question":"《楞嚴經》主要講述？","options":["心性與智慧","戒律","禪定","布施"],"answer":1},
-        {"question":"唯識學的核心是？","options":["識","色","空","因果"],"answer":1},
-        {"question":"中觀派的代表人物是？","options":["龍樹","鳩摩羅什","玄奘","慧能"],"answer":1},
-        {"question":"佛教‘無我’觀念源自？","options":["緣起","因果","戒律","布施"],"answer":1},
-        {"question":"《華嚴經》的主題是？","options":["法界緣起","四聖諦","八正道","五蘊"],"answer":1},
-        {"question":"禪宗六祖慧能提倡？","options":["頓悟","漸修","念佛","持咒"],"answer":1},
-        {"question":"密宗修法重點是？","options":["壇城與咒語","禪坐","布施","戒律"],"answer":1},
-        {"question":"佛教‘五明’包括？","options":["理、醫、辯、工、音樂","戒、定、慧、福、德","身、語、意、慧、德","法、戒、禪、慧、定"],"answer":1},
-        {"question":"阿含經與大乘經主要差異是？","options":["修行目的","經文長短","文字風格","出處地區"],"answer":1},
-        {"question":"瑜伽行唯識學核心是？","options":["心識分別","色相","業報","戒律"],"answer":1},
-        {"question":"佛教‘菩提心’的意涵？","options":["覺悟眾生","自我覺悟","念佛","祈福"],"answer":1},
-        {"question":"法相宗創立者是？","options":["玄奘","慧能","龍樹","鳩摩羅什"],"answer":1},
-        {"question":"佛教‘三界’是？","options":["欲界、色界、無色界","生死界、苦界、樂界","禪界、慧界、道界","地、水、火、風、空"],"answer":1},
-        {"question":"佛教‘十二因緣’的最終目的？","options":["斷輪迴","長壽","積福報","布施"],"answer":1},
-        {"question":"《金剛經》中的‘應無所住而生其心’是指？","options":["心不執著","慈悲心","禪定","福德"],"answer":1},
-        {"question":"佛教論典‘中論’作者？","options":["龍樹","玄奘","慧能","鳩摩羅什"],"answer":1},
-        {"question":"禪宗‘公案’的主要用途？","options":["開悟思維","修福報","布施","誦經"],"answer":1},
-        {"question":"密宗中的‘曼荼羅’作用？","options":["修行與觀想","禪坐","布施","戒律"],"answer":1},
-        {"question":"佛教‘般若波羅蜜多’是？","options":["智慧到彼岸","慈悲修行","禪定法門","布施行"],"answer":1},
-        {"question":"佛教‘空性’的最高體悟是？","options":["諸法實相","四聖諦","八正道","五蘊"],"answer":1}
-    ],
-    "研經班": [
-        {"question":"《大智度論》的主要作者？","options":["鳩摩羅什","玄奘","龍樹","慧能"],"answer":1},
-        {"question":"瑜伽師地論重點為？","options":["唯識思想","禪定修行","戒律","布施"],"answer":1},
-        {"question":"法相唯識三自性包括？","options":["遍計所執性、依他起性、圓成實性","色、受、想","空、無我、緣起","身、語、意"],"answer":1},
-        {"question":"《成唯識論》創作者？","options":["世親","龍樹","玄奘","慧能"],"answer":1},
-        {"question":"中觀宗與唯識宗的主要區別？","options":["空性觀 vs 心識觀","戒律 vs 禪定","慈悲 vs 智慧","福德 vs 功德"],"answer":1},
-        {"question":"《般若波羅蜜多心經》核心思想？","options":["空性","因果","戒律","菩薩行"],"answer":1},
-        {"question":"三論宗的主張是？","options":["中觀","唯識","禪宗","密宗"],"answer":1},
-        {"question":"唯識學中的‘阿賴耶識’指？","options":["藏識","自我意識","五蘊","福報"],"answer":1},
-        {"question":"中觀派強調何種哲理？","options":["緣起","因果","禪定","戒律"],"answer":1},
-        {"question":"《大般涅槃經》的特色是？","options":["佛性思想","禪修","戒律","布施"],"answer":1},
-        {"question":"密宗中‘灌頂’的功能？","options":["授法與加持","禪定","布施","誦經"],"answer":1},
-        {"question":"大乘佛教的‘三身’為？","options":["法身、報身、應身","色、受、想、行、識","佛、法、僧","戒、定、慧"],"answer":1},
-        {"question":"菩薩行六度最後一度是？","options":["般若","禪定","布施","持戒"],"answer":1},
-        {"question":"《楞嚴經》的中心思想？","options":["心性本淨","戒律","布施","祈福"],"answer":1},
-        {"question":"大乘佛教最重視什麼？","options":["普渡眾生","自利","禪定","福德"],"answer":1},
-        {"question":"佛教‘涅槃寂靜’的深義？","options":["遠離生死","祈福","布施","積德"],"answer":1},
-        {"question":"唯識學的修行目標？","options":["轉識成智","布施","念佛","誦經"],"answer":1},
-        {"question":"大乘經典《華嚴經》強調？","options":["法界緣起","禪定","布施","戒律"],"answer":1},
-        {"question":"佛教‘四攝法’包括？","options":["布施、愛語、利行、同事","戒、定、慧、福","禪、定、慧、德","身、語、意、慧、德"],"answer":1},
-        {"question":"佛教‘五蘊皆空’主要論點？","options":["無我","福報","布施","禪定"],"answer":1}
-    ]
+"初級班":[
+{"question":"佛教三寶是指什麼？","options":["佛、法、僧","佛、法、道","佛、菩薩、僧","佛、禪、僧"],"answer":1},
+{"question":"四聖諦第一諦是？","options":["苦諦","集諦","滅諦","道諦"],"answer":1},
+{"question":"八正道的第一條是？","options":["正見","正思惟","正語","正業"],"answer":1},
+{"question":"佛陀的原名是？","options":["悉達多","釋迦","阿難","摩訶"],"answer":1},
+{"question":"佛教的根本經典為？","options":["大藏經","金剛經","法華經","阿含經"],"answer":4},
+{"question":"佛教的核心理念是？","options":["慈悲喜捨","因果報應","禪定修行","無常無我"],"answer":4},
+{"question":"八苦包括何者？","options":["生老病死等八種苦","生死苦","財富痛苦","一切痛苦"],"answer":1},
+{"question":"佛教修行者稱為？","options":["出家人","居士","比丘","以上皆是"],"answer":4},
+{"question":"禪宗最重視什麼？","options":["打坐","念佛","誦經","布施"],"answer":1},
+{"question":"佛陀出生地在哪裡？","options":["藍毗尼","鹿野苑","菩提樹下","拘薩羅"],"answer":1},
+{"question":"佛教主要的修行目的為？","options":["成佛","長壽","修福報","積功德"],"answer":1},
+{"question":"佛教五戒不包括？","options":["不殺生","不偷盜","不飲酒","不食肉"],"answer":4},
+{"question":"佛教的最高境界是？","options":["涅槃","阿羅漢","菩薩","悟道"],"answer":1},
+{"question":"小乘佛教又稱？","options":["上座部佛教","大乘佛教","禪宗","密宗"],"answer":1},
+{"question":"大乘佛教主要經典為？","options":["般若經","阿含經","四十二章經","金剛經"],"answer":1},
+{"question":"佛教禪修的主要目的是？","options":["覺悟","祈福","消災","修行功德"],"answer":1},
+{"question":"佛教的因果法則稱為？","options":["業","命運","福報","道"],"answer":1},
+{"question":"佛教稱時間無常為？","options":["無常","無我","涅槃","空"],"answer":1},
+{"question":"佛教中‘空’的含義？","options":["無自性","沒有佛","空間","無物"],"answer":1},
+{"question":"佛教重要節日‘佛誕日’是？","options":["四月八日","五月初五","七月十五","八月十五"],"answer":1}
+],
+"中級班":[
+{"question":"阿含經屬於哪類佛經？","options":["小乘","大乘","密宗","禪宗"],"answer":1},
+{"question":"佛教的十二因緣第一個是？","options":["無明","行","識","名色"],"answer":1},
+{"question":"四無量心包括？","options":["慈、悲、喜、捨","忍、戒、定、慧","信、願、行、智","空、無相、無願、涅槃"],"answer":1},
+{"question":"大乘佛教的核心理念是？","options":["菩薩道","阿羅漢","小乘成佛","禪定"],"answer":1},
+{"question":"佛教三身為？","options":["法身、報身、化身","身、心、靈","佛、法、僧","真身、假身、常身"],"answer":1},
+{"question":"《金剛經》的中心思想是？","options":["空性","因果","禪修","戒律"],"answer":1},
+{"question":"禪宗六祖慧能提倡？","options":["頓悟","漸修","念佛","持咒"],"answer":1},
+{"question":"佛教‘六波羅蜜’不包括？","options":["布施","持戒","禪定","獨修"],"answer":4},
+{"question":"佛教‘三法印’包括？","options":["諸行無常、諸法無我、涅槃寂靜","諸行無常、苦、無我、涅槃","空、無我、涅槃","因、果、報"],"answer":1},
+{"question":"佛教稱‘六道輪迴’的主要原因是？","options":["業力","福報","天命","佛性"],"answer":1},
+{"question":"佛教稱‘涅槃’意義為？","options":["解脫","成佛","輪迴","修行"],"answer":1},
+{"question":"佛教三界是？","options":["欲界、色界、無色界","天界、人界、地獄界","輪迴界、菩薩界、佛界","空界、心界、法界"],"answer":1},
+{"question":"佛教‘四念處’修行包括？","options":["身、受、心、法","禪定、戒律、智慧、解脫","佛、法、僧、心","喜、悲、捨、空"],"answer":1},
+{"question":"佛教‘五蘊’包括？","options":["色、受、想、行、識","身、口、意、行、心","慧、定、戒、行、願","地、水、火、風、空"],"answer":1},
+{"question":"菩薩道的最終目標？","options":["普度眾生","個人解脫","禪定成就","守戒"],"answer":1},
+{"question":"佛教‘十二因緣’的最後一個是？","options":["老死","生","苦","無明"],"answer":1},
+{"question":"密教修法的主要特徵？","options":["咒、印、曼荼羅","戒律嚴格","持戒禪修","清淨行"],"answer":1},
+{"question":"佛教稱‘三寶依止’是？","options":["依止佛、法、僧","依止戒、定、慧","依止智慧、慈悲、忍","依止善、惡、空"],"answer":1},
+{"question":"《法華經》的核心思想？","options":["一乘成佛","菩薩行","小乘修行","空性"],"answer":1},
+{"question":"佛教‘四攝法’包括？","options":["布施、愛語、利行、同事","禪、定、慧、戒","喜、悲、捨、忍","因、果、法、空"],"answer":1}
+],
+"高級班":[
+{"question":"般若波羅蜜多意指？","options":["智慧到彼岸","慈悲喜捨","戒定慧","涅槃成佛"],"answer":1},
+{"question":"大乘佛教中‘空’的解釋？","options":["一切法無自性","世界無常","人生無我","一切皆苦"],"answer":1},
+{"question":"佛教‘五明’不包括？","options":["文明、辯才、因明、律學、工巧明","文明、辯才、工巧、戒律、禪定","文明、因明、禪定、戒律、醫方","文明、辯才、律學、工巧、醫方"],"answer":2},
+{"question":"佛教‘三論宗’創始人？","options":["鳩摩羅什","龍樹","慧遠","達摩"],"answer":2},
+{"question":"《中論》的核心觀念是？","options":["空","因果","慈悲","涅槃"],"answer":1},
+{"question":"大乘佛教‘菩提心’指？","options":["發心成佛以利眾生","修行自我解脫","禪定成就智慧","持戒守律"],"answer":1},
+{"question":"華嚴宗的核心思想？","options":["緣起法界","空性","菩薩道","般若"],"answer":1},
+{"question":"法相宗的主要研究？","options":["心識與法相","戒律","空性","因果"],"answer":1},
+{"question":"禪宗‘參禪’主要目的是？","options":["頓悟本性","誦經祈福","持咒修行","布施行善"],"answer":1},
+{"question":"淨土宗修行方法是？","options":["念佛","打坐","誦經","持咒"],"answer":1},
+{"question":"天台宗核心法門？","options":["止觀","念佛","誦經","打坐"],"answer":1},
+{"question":"禪宗六祖慧能強調？","options":["直指人心，見性成佛","念佛求生西方","持戒修行","誦經"],"answer":1},
+{"question":"《金剛般若經》主要思想？","options":["一切有為法如夢幻泡影","涅槃寂靜","戒定慧","菩薩道"],"answer":1},
+{"question":"佛教‘三學’包括？","options":["戒、定、慧","禪、密、淨","慈、悲、喜","空、無我、涅槃"],"answer":1},
+{"question":"《楞嚴經》強調？","options":["心性本淨","空性","因果","涅槃"],"answer":1},
+{"question":"大乘佛教四菩薩行包括？","options":["慈、悲、喜、捨","布施、持戒、忍辱、精進","禪、定、慧、戒","福、壽、安、樂"],"answer":2},
+{"question":"佛教‘三解脫門’指？","options":["空、無相、無願","戒、定、慧","布施、持戒、禪定","空、無我、涅槃"],"answer":1},
+{"question":"大乘佛教認為菩薩可延遲成佛以？","options":["救度眾生","修功德","修禪定","持戒"],"answer":1},
+{"question":"《法華經》稱一切眾生皆具？","options":["佛性","慧根","善根","菩提心"],"answer":1},
+{"question":"《華嚴經》說法界無盡圓融指？","options":["一切法相互貫通","因果報應","戒定慧","空性"],"answer":1}
+],
+"研經班":[
+{"question":"佛教‘中觀派’的核心是？","options":["空性","慈悲","戒律","菩薩道"],"answer":1},
+{"question":"《瑜伽師地論》主要研究？","options":["唯識學","禪定","淨土","因果"],"answer":1},
+{"question":"唯識宗認為一切法由何而起？","options":["識","空","因果","菩薩心"],"answer":1},
+{"question":"密教中‘灌頂’的作用是？","options":["傳授密法加持","修持戒律","念佛求生","禪定"],"answer":1},
+{"question":"佛教六度波羅蜜哪一度最重要？","options":["智慧波羅蜜","布施","持戒","禪定"],"answer":1},
+{"question":"《大智度論》作者？","options":["鳩摩羅什","龍樹","慧遠","達摩"],"answer":1},
+{"question":"密教修法三昧耶包括？","options":["身、口、意","禪定、智慧、戒律","布施、持戒、忍辱","空、無我、涅槃"],"answer":1},
+{"question":"佛教‘四法印’包括？","options":["諸行無常、諸法無我、涅槃寂靜、苦","諸行無常、苦、無我、涅槃","空、無我、涅槃、法","因、果、報、空"],"answer":1},
+{"question":"佛教密宗常用什麼圖像修行？","options":["曼荼羅","佛像","菩薩像","法輪"],"answer":1},
+{"question":"佛教‘五明’之‘律學明’指？","options":["戒律","智慧","禪定","布施"],"answer":1},
+{"question":"《大乘起信論》主題？","options":["心性本空與佛性","菩薩行","小乘解脫","禪定"],"answer":1},
+{"question":"佛教‘四念處’為？","options":["身、受、心、法","禪、戒、慧、定","慈悲喜捨","空、無我、涅槃"],"answer":1},
+{"question":"大乘佛教中‘方便品’意指？","options":["以智慧引導眾生","持戒禪定","誦經念佛","求生淨土"],"answer":1},
+{"question":"佛教‘六波羅蜜’的最後一度是？","options":["智慧波羅蜜","布施","忍辱","禪定"],"answer":1},
+{"question":"《華嚴經》提出‘法界緣起’是指？","options":["一切法互相依存","空性","菩薩道","涅槃"],"answer":1},
+{"question":"佛教唯識八識中最後一識為？","options":["阿賴耶識","意識","眼識","末那識"],"answer":1},
+{"question":"密教修法中咒語的作用？","options":["加持與攝心","求福報","誦經","布施"],"answer":1},
+{"question":"佛教‘三解脫門’為？","options":["空、無相、無願","戒、定、慧","布施、持戒、禪定","空、無我、涅槃"],"answer":1},
+{"question":"佛教大乘中‘菩提心’的意義？","options":["成佛以利眾生","自我解脫","禪定成就","持戒修行"],"answer":1},
+{"question":"《金剛般若經》主要理念？","options":["破執、空性智慧","因果報應","菩薩道","戒定慧"],"answer":1}
+]
 };
 
 let currentClass = "初級班";
@@ -229,109 +197,94 @@ let qIndex = 0;
 let correctCount = 0;
 let answered = [];
 
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
+function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()* (i+1));[array[i],array[j]]=[array[j],array[i]];}}
 
 function loadClass(cls){
-    currentClass = cls;
-    questions = [...DATA[cls]];
-    const limit = document.getElementById("limit").value;
-    if(limit !== "all") questions = questions.slice(0, parseInt(limit));
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    if(mode === "random") shuffle(questions);
-    document.getElementById("totalTag").innerText = questions.length;
-    qIndex = 0;
-    correctCount = 0;
-    answered = Array(questions.length).fill(null);
+    currentClass=cls;
+    questions=[...DATA[cls]];
+    const limit=document.getElementById("limit").value;
+    if(limit!=="all") questions=questions.slice(0,parseInt(limit));
+    const mode=document.querySelector('input[name="mode"]:checked').value;
+    if(mode==="random") shuffle(questions);
+    document.getElementById("totalTag").innerText=questions.length;
+    qIndex=0;correctCount=0;
+    answered=Array(questions.length).fill(null);
     showQuestion();
     document.getElementById("quiz").style.display="block";
 }
 
 function showQuestion(){
-    const q = questions[qIndex];
-    document.getElementById("q").innerText = (qIndex+1)+". "+q.question;
-    const optsDiv = document.getElementById("opts");
-    optsDiv.innerHTML = "";
-    q.options.forEach((opt, i)=>{
-        const btn = document.createElement("div");
+    const q=questions[qIndex];
+    document.getElementById("q").innerText=(qIndex+1)+". "+q.question;
+    const optsDiv=document.getElementById("opts");
+    optsDiv.innerHTML="";
+    q.options.forEach((opt,i)=>{
+        const btn=document.createElement("div");
         btn.className="opt"+(answered[qIndex]!==null?" disabled":"");
-        btn.innerText = opt;
-        btn.onclick = ()=>selectOption(i);
+        btn.innerText=opt;
+        btn.onclick=()=>selectOption(i);
         optsDiv.appendChild(btn);
     });
     updateMeta();
     document.getElementById("msg").innerText="";
+    updateProgress();
 }
 
 function selectOption(i){
-    const q = questions[qIndex];
-    answered[qIndex] = i;
-    const optsDiv = document.getElementById("opts");
+    const q=questions[qIndex];
+    answered[qIndex]=i;
+    const optsDiv=document.getElementById("opts");
     Array.from(optsDiv.children).forEach((btn,index)=>{
         btn.classList.add("disabled");
-        if(index+1 === q.answer) btn.classList.add("right");
-        if(index === i && i+1 !== q.answer) btn.classList.add("wrong");
+        if(index+1===q.answer) btn.classList.add("right");
+        if(index===i && i+1!==q.answer) btn.classList.add("wrong");
     });
-    if(i+1 === q.answer) correctCount++;
+    if(i+1===q.answer) correctCount++;
     updateMeta();
+    updateProgress();
 }
 
 function updateMeta(){
-    document.getElementById("posTag").innerText = (qIndex+1)+" / "+questions.length;
-    document.getElementById("okTag").innerText = correctCount;
+    document.getElementById("posTag").innerText=(qIndex+1)+" / "+questions.length;
+    document.getElementById("okTag").innerText=correctCount;
 }
 
-document.getElementById("start").onclick = ()=>{
-    const cls = document.getElementById("classSelect").value;
-    loadClass(cls);
-};
+function updateProgress(){
+    const progress=((qIndex+1)/questions.length)*100;
+    document.getElementById("progressBar").style.width=progress+"%";
+}
 
-document.getElementById("next").onclick = ()=>{
-    if(qIndex < questions.length-1){ qIndex++; showQuestion(); }
-    else showResult();
-};
-
-document.getElementById("prev").onclick = ()=>{
-    if(qIndex>0){ qIndex--; showQuestion(); }
-};
-
-document.getElementById("reveal").onclick = ()=>{
-    const q = questions[qIndex];
-    const optsDiv = document.getElementById("opts");
+document.getElementById("start").onclick=()=>{loadClass(document.getElementById("classSelect").value);}
+document.getElementById("next").onclick=()=>{if(qIndex<questions.length-1){qIndex++;showQuestion();}else showResult();}
+document.getElementById("prev").onclick=()=>{if(qIndex>0){qIndex--;showQuestion();}}
+document.getElementById("reveal").onclick=()=>{
+    const q=questions[qIndex];
+    const optsDiv=document.getElementById("opts");
     Array.from(optsDiv.children).forEach((btn,index)=>{
         btn.classList.add("disabled");
-        if(index+1 === q.answer) btn.classList.add("right");
+        if(index+1===q.answer) btn.classList.add("right");
         if(answered[qIndex]!==null && index===answered[qIndex] && index+1!==q.answer) btn.classList.add("wrong");
     });
 };
-
-document.getElementById("reset").onclick = ()=>{
-    loadClass(currentClass);
-};
+document.getElementById("reset").onclick=()=>{loadClass(currentClass);}
 
 function showResult(){
     document.getElementById("resultModal").style.display="flex";
-    document.getElementById("rTotal").innerText = questions.length;
-    document.getElementById("rCorrect").innerText = correctCount;
-    document.getElementById("rAcc").innerText = ((correctCount/questions.length)*100).toFixed(1)+"%";
-    const tbody = document.getElementById("rTable").querySelector("tbody");
+    document.getElementById("rTotal").innerText=questions.length;
+    document.getElementById("rCorrect").innerText=correctCount;
+    document.getElementById("rAcc").innerText=((correctCount/questions.length)*100).toFixed(1)+"%";
+    const tbody=document.getElementById("rTable").querySelector("tbody");
     tbody.innerHTML="";
     questions.forEach((q,i)=>{
         if(answered[i]!==q.answer-1){
-            const tr = document.createElement("tr");
+            const tr=document.createElement("tr");
             tr.innerHTML=`<td>${i+1}</td><td>${q.question}</td><td>${answered[i]!==null?q.options[answered[i]]:"未作答"}</td><td>${q.options[q.answer-1]}</td>`;
             tbody.appendChild(tr);
         }
     });
 }
 
-document.getElementById("closeResult").onclick = ()=>{
-    document.getElementById("resultModal").style.display="none";
-};
+document.getElementById("closeResult").onclick=()=>{document.getElementById("resultModal").style.display="none";}
 </script>
 </body>
 </html>
