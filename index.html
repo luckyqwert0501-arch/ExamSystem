@@ -2,126 +2,209 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>普高精舍禪修班 線上題庫系統</title>
+<title>普高精舍禪修班 線上題庫系統（班級篩選＋順序/隨機）</title>
 <style>
-  body { font-family: '微軟正黑體', sans-serif; background: #fdf6e3; padding: 20px; }
-  .container { max-width: 800px; margin: auto; }
-  h1 { text-align: center; color: #2e7d32; }
-  select, button { padding: 10px; margin: 10px 0; font-size: 16px; }
-  .question { background: #fff3e0; border-left: 5px solid #fb8c00; padding: 15px; margin: 15px 0; border-radius: 8px; }
-  .options button { display: block; margin: 5px 0; padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; background: #fff; }
-  .options button:hover { background: #ffe0b2; }
-  .answer { margin-top: 10px; font-weight: bold; color: #d32f2f; }
+    body {
+        font-family: "Noto Sans TC","PingFang TC",sans-serif;
+        background: #fff8e1;
+        color: #5d4037;
+        margin: 0;
+        padding: 20px;
+    }
+    .card {
+        background: #fff3e0;
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h2 { color: #bf360c; }
+    .tag, .badge {
+        display:inline-block;
+        padding: 6px 12px;
+        border-radius: 12px;
+        margin: 2px 6px 2px 0;
+        background: #ffe0b2;
+        font-weight: bold;
+    }
+    .opt {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid #d7ccc8;
+        transition: 0.2s;
+        background: #fff8e1;
+    }
+    .opt.right { background:#c8e6c9; border-color:#81c784; }
+    .opt.wrong { background:#ffcdd2; border-color:#ef9a9a; }
+    .opt.disabled { pointer-events:none; opacity:0.9; }
+    button {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border:none;
+        cursor:pointer;
+    }
+    .btn { background:#ffe0b2; color:#5d4037; margin-right:6px; }
+    .btn.primary { background:#ff8f00; color:#fff; }
+    #msg.ok { color:#2e7d32; }
+    #msg.bad { color:#b71c1c; }
+    select, input[type=checkbox], input[type=radio] { margin-right:6px; }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>普高精舍禪修班 線上題庫系統</h1>
-  <label for="classSelect">選擇班級：</label>
-  <select id="classSelect">
-    <option value="beginner">初級班</option>
-    <option value="intermediate">中級班</option>
-    <option value="advanced">高級班</option>
-    <option value="research">研經班</option>
-  </select>
-  <button onclick="generateQuestions()">出題</button>
-
-  <div id="questionsContainer"></div>
+<div class="card">
+    <h2>普高精舍禪修班 線上題庫系統</h2>
+    <div>
+        <span class="tag">共 <b id="totalTag">0</b> 題</span>
+        <span class="badge">目前：<b id="posTag">0 / 0</b></span>
+        <span class="badge">已答對：<b id="okTag">0</b></span>
+    </div>
+    <div style="margin:6px 0;">
+        <label>班級：
+            <select id="classSelect">
+                <option value="班A" selected>班A</option>
+                <option value="班B">班B</option>
+                <option value="班C">班C</option>
+            </select>
+        </label>
+        <label>
+            <input type="radio" name="mode" value="sequential" checked>依順序
+        </label>
+        <label>
+            <input type="radio" name="mode" value="random">隨機
+        </label>
+        <select id="limit">
+            <option value="20">20</option>
+        </select>
+        <button class="btn primary" id="start">開始作答</button>
+        <button class="btn" id="reset">重置</button>
+    </div>
+    <hr>
+    <div id="quiz" style="display:none">
+        <div id="meta"></div>
+        <h3 id="q"></h3>
+        <div id="opts"></div>
+        <div id="msg" style="margin-top:6px;"></div>
+        <div style="margin-top:8px;">
+            <button class="btn" id="prev">上一題</button>
+            <button class="btn" id="next">下一題</button>
+        </div>
+    </div>
 </div>
 
 <script>
-const questionBank = {
-  beginner: [
-    {q: "釋迦牟尼佛的本名是什麼？", options: ["釋迦牟尼","悉達多","阿難","龍樹"], answer: "悉達多"},
-    {q: "佛教的三寶是指哪三個？", options: ["佛、法、僧","天、地、人","日、月、星","生、老、病"], answer: "佛、法、僧"},
-    {q: "佛教的創立者是誰？", options: ["釋迦牟尼","孔子","老子","耶穌"], answer: "釋迦牟尼"},
-    {q: "佛教的四聖諦中，第二諦是什麼？", options: ["苦諦","集諦","滅諦","道諦"], answer: "集諦"},
-    {q: "佛教的八正道中，正語指的是什麼？", options: ["說真話","不說謊","不說兩舌","以上皆是"], answer: "以上皆是"},
-    {q: "佛教的三法印不包括哪一項？", options: ["無常","無我","有我","涅槃"], answer: "有我"},
-    {q: "佛教的涅槃是指什麼？", options: ["生死輪迴","解脫與安息","轉世","以上皆是"], answer: "解脫與安息"},
-    {q: "佛教的僧團中，僧伽的意思是什麼？", options: ["善知識","修行者的團體","佛的化身","佛的弟子"], answer: "修行者的團體"},
-    {q: "佛教的經典中，最重要的一部是什麼？", options: ["金剛經","法華經","阿含經","大般涅槃經"], answer: "阿含經"},
-    {q: "佛教認為一切事物都是無常的，這是指什麼？", options: ["固定不變","處於變化之中","不會改變","以上皆是"], answer: "處於變化之中"},
-    {q: "佛教禪定強調哪一宗派？", options: ["禪宗","净土宗","天台宗","法相宗"], answer: "禪宗"},
-    {q: "佛教認為一切事物都是無我，指什麼？", options: ["有固定自我","無自性","獨立存在","以上皆是"], answer: "無自性"},
-    {q: "初級題目示例13", options: ["A","B","C","D"], answer: "A"},
-    {q: "初級題目示例14", options: ["A","B","C","D"], answer: "B"},
-    {q: "初級題目示例15", options: ["A","B","C","D"], answer: "C"},
-    {q: "初級題目示例16", options: ["A","B","C","D"], answer: "D"},
-    {q: "初級題目示例17", options: ["A","B","C","D"], answer: "A"},
-    {q: "初級題目示例18", options: ["A","B","C","D"], answer: "B"},
-    {q: "初級題目示例19", options: ["A","B","C","D"], answer: "C"},
-    {q: "初級題目示例20", options: ["A","B","C","D"], answer: "D"},
-  ],
-  intermediate: [
-    // 中級班20題示例
-    {q: "中級題目1", options:["A","B","C","D"], answer:"A"},
-    {q: "中級題目2", options:["A","B","C","D"], answer:"B"},
-    {q: "中級題目3", options:["A","B","C","D"], answer:"C"},
-    {q: "中級題目4", options:["A","B","C","D"], answer:"D"},
-    {q: "中級題目5", options:["A","B","C","D"], answer:"A"},
-    {q: "中級題目6", options:["A","B","C","D"], answer:"B"},
-    {q: "中級題目7", options:["A","B","C","D"], answer:"C"},
-    {q: "中級題目8", options:["A","B","C","D"], answer:"D"},
-    {q: "中級題目9", options:["A","B","C","D"], answer:"A"},
-    {q: "中級題目10", options:["A","B","C","D"], answer:"B"},
-    {q: "中級題目11", options:["A","B","C","D"], answer:"C"},
-    {q: "中級題目12", options:["A","B","C","D"], answer:"D"},
-    {q: "中級題目13", options:["A","B","C","D"], answer:"A"},
-    {q: "中級題目14", options:["A","B","C","D"], answer:"B"},
-    {q: "中級題目15", options:["A","B","C","D"], answer:"C"},
-    {q: "中級題目16", options:["A","B","C","D"], answer:"D"},
-    {q: "中級題目17", options:["A","B","C","D"], answer:"A"},
-    {q: "中級題目18", options:["A","B","C","D"], answer:"B"},
-    {q: "中級題目19", options:["A","B","C","D"], answer:"C"},
-    {q: "中級題目20", options:["A","B","C","D"], answer:"D"},
-  ],
-  advanced: [
-    // 高級班20題示例
-    {q:"高級題目1", options:["A","B","C","D"], answer:"A"},
-    // ...其餘19題
-  ],
-  research: [
-    // 研經班20題示例
-    {q:"研經題目1", options:["A","B","C","D"], answer:"A"},
-    // ...其餘19題
-  ]
+// 範例佛教題目，每班20題
+const DATA = {
+    "班A":[
+        {question:"《金剛經》的核心思想是？", options:["空性","因果","禪定","菩薩行"], answer:1},
+        {question:"佛教三寶指？", options:["佛法僧","戒律經論","禪定智慧","法身報身"], answer:1},
+        {question:"八正道包含？", options:["正見、正思維、正語、正業","正念、正定、正慧、正命","以上皆是","不一定"], answer:3},
+        {question:"四聖諦不包括？", options:["苦諦","集諦","滅諦","無我諦"], answer:4},
+        {question:"佛陀最初成道地點？", options:["鹿野苑","菩提樹下","靈鷲山","迦毗羅衛國"], answer:2},
+        {question:"阿含經主要內容是？", options:["佛陀言教","禪修方法","律典條文","密教儀軌"], answer:1},
+        {question:"《法華經》主要宗旨？", options:["方便法門","真如實相","菩薩行","一乘法"], answer:4},
+        {question:"佛教四無量心之一", options:["慈、悲、喜、捨","慈、悲、忍、定","信、慧、戒、定","喜、悲、定、慧"], answer:1},
+        {question:"涅槃的意義？", options:["生死自由","斷苦無為","解脫成佛","以上皆是"], answer:4},
+        {question:"菩薩行六度之一", options:["布施","持戒","忍辱","精進"], answer:1},
+        {question:"四念處修習對象？", options:["身、受、心、法","佛、法、僧、戒","身、口、意、慧","苦、集、滅、道"], answer:1},
+        {question:"因果法則也稱？", options:["業力","因緣","輪迴","福報"], answer:1},
+        {question:"中觀學派創始人？", options:["龍樹","世親","馬鳴","佛陀"], answer:1},
+        {question:"大乘佛教的核心精神？", options:["慈悲喜捨","空性智慧","菩提心","以上皆是"], answer:4},
+        {question:"《楞嚴經》的教義強調？", options:["心性本淨","戒律嚴明","禪定修行","智慧修持"], answer:1},
+        {question:"三乘教義不包含？", options:["聲聞","緣覺","菩薩","密乘"], answer:4},
+        {question:"佛教五戒不包括？", options:["不殺生","不偷盜","不邪淫","不喝茶"], answer:4},
+        {question:"佛教稱「涅槃寂靜」為？", options:["究竟涅槃","有餘涅槃","初果涅槃","滅度"], answer:1},
+        {question:"密教修行主要為？", options:["觀想儀軌","持戒修禪","經論講義","念佛法門"], answer:1},
+        {question:"《華嚴經》強調法界緣起之意？", options:["一即一切、一切即一","空性無我","四諦道理","六度行"], answer:1}
+    ],
+    "班B":[ /* 20題類似結構 */ ],
+    "班C":[ /* 20題類似結構 */ ]
 };
 
-function shuffleArray(arr) {
-  return arr.sort(() => Math.random() - 0.5);
+let quiz = [], idx=0, correct=0;
+
+const q = document.getElementById("q"),
+      opts = document.getElementById("opts"),
+      msg = document.getElementById("msg"),
+      meta = document.getElementById("meta"),
+      prev = document.getElementById("prev"),
+      next = document.getElementById("next"),
+      quizBox = document.getElementById("quiz"),
+      totalTag = document.getElementById("totalTag"),
+      posTag = document.getElementById("posTag"),
+      okTag = document.getElementById("okTag");
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function getSettings(){
+    const cls = document.getElementById("classSelect").value;
+    let pool = DATA[cls];
+    const mode = document.querySelector("input[name=mode]:checked").value;
+    if(mode==="random") shuffle(pool);
+    return pool.slice(0, parseInt(document.getElementById("limit").value));
 }
 
-function generateQuestions() {
-  const classSelect = document.getElementById("classSelect").value;
-  const container = document.getElementById("questionsContainer");
-  container.innerHTML = "";
-  
-  // 隨機抽20題
-  const questions = shuffleArray([...questionBank[classSelect]]).slice(0, 20);
-  
-  questions.forEach((qObj, index) => {
-    const qDiv = document.createElement("div");
-    qDiv.className = "question";
-    qDiv.innerHTML = `<div><strong>${index+1}. ${qObj.q}</strong></div>`;
-    
-    const optionsDiv = document.createElement("div");
-    optionsDiv.className = "options";
-    
-    qObj.options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.textContent = opt;
-      btn.onclick = () => {
-        alert(opt === qObj.answer ? "答對了！" : `答錯！答案是：${qObj.answer}`);
-      };
-      optionsDiv.appendChild(btn);
-    });
-    
-    qDiv.appendChild(optionsDiv);
-    container.appendChild(qDiv);
-  });
+function start(){
+    quiz = getSettings();
+    if(!quiz.length){alert("選擇班級尚無題目"); return;}
+    idx=0; correct=0;
+    quizBox.style.display="";
+    totalTag.textContent=quiz.length;
+    posTag.textContent=`${idx+1} / ${quiz.length}`;
+    okTag.textContent=correct;
+    render();
 }
+
+function render(){
+    const t = quiz[idx];
+    q.textContent = (idx+1)+". "+t.question;
+    meta.textContent = "班級題目";
+    opts.innerHTML="";
+    msg.textContent="";
+    t.options.forEach((o,i)=>{
+        const d=document.createElement("div");
+        d.className="opt";
+        d.dataset.i=i+1;
+        d.textContent=(i+1)+". "+o;
+        d.onclick=()=>choose(i+1);
+        opts.appendChild(d);
+    });
+    posTag.textContent=`${idx+1} / ${quiz.length}`;
+    okTag.textContent=correct;
+    prev.disabled = idx===0;
+}
+
+function choose(n){
+    const t = quiz[idx];
+    const ok = n===t.answer;
+    if(ok) correct++;
+    opts.querySelectorAll(".opt").forEach(el=>{
+        el.classList.add("disabled");
+        const val = Number(el.dataset.i);
+        if(val===t.answer) el.classList.add("right");
+        if(val===n && val!==t.answer) el.classList.add("wrong");
+    });
+    msg.textContent=ok?"答對了！":`答錯了，正確答案是 ${t.answer}: ${t.options[t.answer-1]}`;
+    msg.className=ok?"ok":"bad";
+    okTag.textContent=correct;
+}
+
+function nextQ(){if(idx<quiz.length-1){idx++; render();}}
+
+function prevQ(){if(idx>0){idx--; render();}}
+
+document.getElementById("start").onclick=start;
+document.getElementById("reset").onclick=()=>{
+    quiz=[]; idx=0; correct=0;
+    quizBox.style.display="none";
+    totalTag.textContent=0;
+    posTag.textContent="0 / 0";
+    okTag.textContent=0;
+};
+next.onclick=nextQ;
+prev.onclick=prevQ;
 </script>
 </body>
 </html>
