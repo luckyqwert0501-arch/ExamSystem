@@ -1,126 +1,119 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>聖經刷題系統</title>
-  <style>
-    body {
-      font-family: "Noto Sans TC", sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
-      background: #2563eb;
-      color: white;
-      width: 100%;
-      text-align: center;
-      padding: 1rem 0;
-      font-size: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    main {
-      width: 90%;
-      max-width: 600px;
-      background: white;
-      border-radius: 16px;
-      padding: 2rem;
-      margin-top: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    button:hover {
-      background: #1d4ed8;
-    }
-    .question {
-      margin: 1.5rem 0;
-    }
-    .options label {
-      display: block;
-      margin: 0.5rem 0;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>刷題系統</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  #quizContainer { display: none; margin-top: 20px; }
+  #answers button { display: block; margin: 5px 0; }
+  .correct { background-color: #8fbc8f; color: white; }
+  .wrong { background-color: #f08080; color: white; }
+</style>
 </head>
 <body>
-  <header>📖 聖經刷題系統（範例）</header>
-  <main>
-    <div id="quiz"></div>
-    <button id="nextBtn">下一題</button>
-  </main>
 
-  <script>
-    const questions = [
-      {
-        q: "耶穌出生於哪一個城市？",
-        options: ["拿撒勒", "伯利恆", "耶路撒冷", "迦百農"],
-        answer: 1
-      },
-      {
-        q: "摩西分開的是哪一條海？",
-        options: ["地中海", "紅海", "死海", "約旦河"],
-        answer: 1
-      },
-      {
-        q: "舊約聖經的第一卷書是？",
-        options: ["出埃及記", "創世記", "利未記", "民數記"],
-        answer: 1
-      }
-    ];
+<h2>請選擇班級</h2>
+<select id="classSelect">
+  <option value="">-- 選擇班級 --</option>
+  <option value="beginner">初級班</option>
+  <option value="intermediate">中級班</option>
+  <option value="advanced">高級班</option>
+  <option value="study">研經班</option>
+</select>
+<button id="startBtn">開始作答</button>
 
-    let current = 0;
+<div id="quizContainer">
+  <h3 id="question"></h3>
+  <div id="answers"></div>
+  <button id="nextBtn">下一題</button>
+  <p id="score"></p>
+</div>
 
-    const quizDiv = document.getElementById("quiz");
-    const nextBtn = document.getElementById("nextBtn");
+<script>
+// 範例題庫
+const DATA = {
+  beginner: [
+    { q: "初級題1", a: ["A1","B1","C1","D1"], correct: 0 },
+    { q: "初級題2", a: ["A2","B2","C2","D2"], correct: 1 }
+  ],
+  intermediate: [
+    { q: "中級題1", a: ["A1","B1","C1","D1"], correct: 2 }
+  ],
+  advanced: [
+    { q: "高級題1", a: ["A1","B1","C1","D1"], correct: 3 }
+  ],
+  study: [
+    { q: "研經題1", a: ["A1","B1","C1","D1"], correct: 0 }
+  ]
+};
 
-    function showQuestion(index) {
-      const q = questions[index];
-      quizDiv.innerHTML = `
-        <div class="question"><strong>第 ${index + 1} 題：</strong> ${q.q}</div>
-        <div class="options">
-          ${q.options
-            .map(
-              (opt, i) =>
-                `<label><input type="radio" name="q${index}" value="${i}"> ${opt}</label>`
-            )
-            .join("")}
-        </div>
-      `;
-    }
+let currentClass = "";
+let currentQuiz = [];
+let currentIndex = 0;
+let score = 0;
 
-    nextBtn.addEventListener("click", () => {
-      const selected = document.querySelector(`input[name="q${current}"]:checked`);
-      if (!selected) {
-        alert("請先選一個答案！");
-        return;
-      }
-      const answer = parseInt(selected.value);
-      if (answer === questions[current].answer) {
-        alert("✅ 答對了！");
+// 洗牌函數
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  const select = document.getElementById("classSelect");
+  currentClass = select.value;
+  if (!currentClass) {
+    alert("請先選擇班級！");
+    return;
+  }
+  currentQuiz = shuffle([...DATA[currentClass]]);
+  currentIndex = 0;
+  score = 0;
+  document.getElementById("quizContainer").style.display = "block";
+  document.getElementById("score").textContent = "";
+  showQuestion();
+});
+
+function showQuestion() {
+  const qObj = currentQuiz[currentIndex];
+  document.getElementById("question").textContent = qObj.q;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+  qObj.a.forEach((ans, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = ans;
+    btn.addEventListener("click", () => {
+      // 禁用所有按鈕
+      Array.from(answersDiv.children).forEach(b => b.disabled = true);
+      // 標記答案
+      if (i === qObj.correct) {
+        btn.classList.add("correct");
+        alert("答對了！");
+        score++;
       } else {
-        alert("❌ 答錯了！");
-      }
-      current++;
-      if (current < questions.length) {
-        showQuestion(current);
-      } else {
-        quizDiv.innerHTML = "<h3>🎉 全部作答完畢！</h3>";
-        nextBtn.style.display = "none";
+        btn.classList.add("wrong");
+        // 標記正確答案
+        answersDiv.children[qObj.correct].classList.add("correct");
+        alert("答錯了！");
       }
     });
+    answersDiv.appendChild(btn);
+  });
+}
 
-    showQuestion(current);
-  </script>
+document.getElementById("nextBtn").addEventListener("click", () => {
+  currentIndex++;
+  if (currentIndex >= currentQuiz.length) {
+    alert(`已完成本班題目！總答對題數：${score}/${currentQuiz.length}`);
+    document.getElementById("quizContainer").style.display = "none";
+  } else {
+    showQuestion();
+  }
+});
+</script>
+
 </body>
 </html>
