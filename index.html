@@ -2,187 +2,265 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"/>
-<title>普高精舍禪修班 線上題庫系統（章節＋班別）</title>
+<title>大乘起信論 刷題（班級＋章節篩選＋順序/隨機）</title>
 <style>
-/* --- 美編樣式同上 --- */
-body { font-family: "Noto Sans TC","PingFang TC",sans-serif; background:#f5f5f5; margin:0; padding:20px; color:#222; }
-.card { background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); max-width:980px; margin:auto; }
-.opt { margin:10px 0; padding:12px; border-radius:8px; border:1px solid #ccc; cursor:pointer; transition:.15s; font-weight:500; }
-.opt[data-i="1"] { color:#d32f2f; } .opt[data-i="2"] { color:#1976d2; } .opt[data-i="3"] { color:#388e3c; } .opt[data-i="4"] { color:#8e24aa; }
-.opt.right { background:#a5d6a7 !important; border-color:#81c784; }
-.opt.wrong { background:#ef9a9a !important; border-color:#e57373; }
-.opt.disabled { pointer-events:none; opacity:.9; }
-button { padding:10px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:500; }
-.btn { background:#e0e0e0; } .btn.primary { background:#2a62ff; color:#fff; }
-#msg.ok { color:#2e7d32; font-weight:500; }
-#msg.bad { color:#b71c1c; font-weight:500; }
-.tag, .badge { display:inline-block; border-radius:8px; padding:6px 10px; margin:2px 6px 2px 0; }
-.tag { background:#eee; } .badge { background:#f0f7ff; border:1px solid #cfe0ff; }
-hr { border:none; border-top:1px solid #eee; margin:16px 0; }
-#resultModal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; padding:16px; }
-.result-card { background:#fff; max-width:760px; width:100%; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.25); padding:20px; }
-.result-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
-.kpi { background:#f9fafb; border:1px solid #eee; border-radius:10px; padding:10px; } .kpi b { font-size:18px; }
-.table { width:100%; border-collapse:collapse; margin-top:8px; font-size:14px; }
-.table th, .table td { border:1px solid #eee; padding:8px; text-align:left; }
-.table th { background:#fafafa; }
-@media (max-width:640px){ .result-grid { grid-template-columns:1fr; } }
+body {
+    font-family: "Noto Sans TC","PingFang TC",sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    color: #222;
+}
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+    max-width: 980px;
+    margin: auto;
+}
+.opt {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: .15s;
+}
+.opt[data-i="1"] { color: #d32f2f; }
+.opt[data-i="2"] { color: #1976d2; }
+.opt[data-i="3"] { color: #388e3c; }
+.opt[data-i="4"] { color: #8e24aa; }
+.opt.right { background: #a5d6a7 !important; border-color: #81c784; }
+.opt.wrong { background: #ef9a9a !important; border-color: #e57373; }
+.opt.disabled { pointer-events: none; opacity: .9; }
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn { background: #e0e0e0; }
+.btn.primary { background: #2a62ff; color: #fff; }
+#msg.ok { color: #2e7d32; }
+#msg.bad { color: #b71c1c; }
+.tag, .badge {
+    display: inline-block;
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin: 2px 6px 2px 0;
+}
+.tag { background: #eee; }
+.badge { background: #f0f7ff; border: 1px solid #cfe0ff; }
+hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+/* 成績畫面 */
+#resultModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.result-card {
+    background: #fff;
+    max-width: 760px;
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    padding: 20px;
+}
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 10px;
+}
+.kpi { background: #f9fafb; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
+.kpi b { font-size: 18px; }
+.table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+.table th,.table td { border: 1px solid #eee; padding: 8px; text-align: left; }
+.table th { background: #fafafa; }
+@media (max-width: 640px) { .result-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div class="card">
-<h2>普高精舍禪修班 線上題庫系統</h2>
-<div>
-<span class="tag">總題數 <b id="totalTag">0</b></span>
-<span class="badge">進度 <b id="posTag">0 / 0</b></span>
-<span class="badge">已答對 <b id="okTag">0</b></span>
-</div>
-<div style="margin:6px 0;">
-<!-- 章節篩選 -->
-<label><input type="checkbox" class="chap" value="總說" checked>總說</label>
-<label><input type="checkbox" class="chap" value="五重玄義" checked>五重玄義</label>
-<label><input type="checkbox" class="chap" value="歸敬辨意" checked>歸敬辨意</label>
-<label><input type="checkbox" class="chap" value="因緣分" checked>因緣分</label>
-</div>
-<div style="margin:6px 0;">
-<!-- 班級篩選 -->
-<label><input type="checkbox" class="cls" value="初級班" checked>初級班</label>
-<label><input type="checkbox" class="cls" value="中級班" checked>中級班</label>
-<label><input type="checkbox" class="cls" value="高級班" checked>高級班</label>
-<label><input type="checkbox" class="cls" value="研經班" checked>研經班</label>
-</div>
-<div>
-<label><input type="radio" name="mode" value="sequential" checked>依順序</label>
-<label><input type="radio" name="mode" value="random">隨機</label>
-<select id="limit">
-<option value="all">全部</option>
-<option value="5">5</option>
-<option value="10">10</option>
-<option value="20">20</option>
-<option value="30">30</option>
-<option value="50">50</option>
-</select>
-<button class="btn primary" id="start">開始作答</button>
-<button class="btn" id="reset">重置</button>
-</div>
-<hr>
-<div id="quiz" style="display:none">
-<div id="meta"></div>
-<h3 id="q"></h3>
-<div id="opts"></div>
-<div id="msg"></div>
-<div style="margin-top:8px;">
-<button class="btn" id="prev">上一題</button>
-<button class="btn" id="reveal">看答案</button>
-<button class="btn" id="next">下一題</button>
-</div>
-</div>
+    <h2>大乘起信論 線上刷題</h2>
+    <div>
+        <span class="tag">共 <b id="totalTag">0</b> 題</span>
+        <span class="badge">目前：<b id="posTag">0 / 0</b></span>
+        <span class="badge">已答對：<b id="okTag">0</b></span>
+    </div>
+
+    <!-- 班級選擇 -->
+    <div style="margin:6px 0;">
+        <label><input type="checkbox" class="cls" value="初級班" checked>初級班</label>
+        <label><input type="checkbox" class="cls" value="中級班" checked>中級班</label>
+        <label><input type="checkbox" class="cls" value="高級班" checked>高級班</label>
+        <label><input type="checkbox" class="cls" value="研經班" checked>研經班</label>
+    </div>
+
+    <!-- 章節選擇 -->
+    <div style="margin:6px 0;">
+        <label><input type="checkbox" class="chap" value="總說" checked>總說</label>
+        <label><input type="checkbox" class="chap" value="五重玄義" checked>五重玄義</label>
+        <label><input type="checkbox" class="chap" value="歸敬辨意" checked>歸敬辨意</label>
+        <label><input type="checkbox" class="chap" value="因緣分" checked>因緣分</label>
+    </div>
+
+    <div>
+        <label><input type="radio" name="mode" value="sequential" checked>依順序</label>
+        <label><input type="radio" name="mode" value="random">隨機</label>
+        <select id="limit">
+            <option value="all">全部</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+        </select>
+        <button class="btn primary" id="start">開始作答</button>
+        <button class="btn" id="reset">重置</button>
+    </div>
+    <hr>
+    <div id="quiz" style="display:none">
+        <div id="meta"></div>
+        <h3 id="q"></h3>
+        <div id="opts"></div>
+        <div id="msg"></div>
+        <div style="margin-top:8px;">
+            <button class="btn" id="prev">上一題</button>
+            <button class="btn" id="reveal">看答案</button>
+            <button class="btn" id="next">下一題</button>
+        </div>
+    </div>
 </div>
 
+<!-- 成績畫面 -->
 <div id="resultModal">
-<div class="result-card">
-<h3>作答結果</h3>
-<div class="result-grid">
-<div class="kpi">總題數：<b id="rTotal">0</b></div>
-<div class="kpi">答對數：<b id="rCorrect">0</b></div>
-<div class="kpi">正確率：<b id="rAcc">0%</b></div>
-</div>
-<h4 style="margin-top:12px;">錯題回顧</h4>
-<table class="table" id="rTable">
-<thead><tr><th>#</th><th>題目</th><th>你的答案</th><th>正解</th></tr></thead>
-<tbody></tbody>
-</table>
-<div style="text-align:right;margin-top:12px;"><button class="btn" id="closeResult">關閉</button></div>
-</div>
+    <div class="result-card">
+        <h3>作答結果</h3>
+        <div class="result-grid">
+            <div class="kpi">總題數：<b id="rTotal">0</b></div>
+            <div class="kpi">答對數：<b id="rCorrect">0</b></div>
+            <div class="kpi">正確率：<b id="rAcc">0%</b></div>
+        </div>
+        <h4 style="margin-top:12px;">錯題回顧</h4>
+        <table class="table" id="rTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>題目</th>
+                    <th>你的答案</th>
+                    <th>正解</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div style="text-align:right;margin-top:12px;">
+            <button class="btn" id="closeResult">關閉</button>
+        </div>
+    </div>
 </div>
 
 <script>
-const DATA=[
-  {chapter:"總說", class:"初級班", question:"問1: 總說題目A1?", options:["選1","選2","選3","選4"], answer:0},
-  {chapter:"總說", class:"中級班", question:"問2: 總說題目B1?", options:["選1","選2","選3","選4"], answer:1},
-  {chapter:"五重玄義", class:"高級班", question:"問3: 五重玄義題目A?", options:["選1","選2","選3","選4"], answer:2},
-  {chapter:"歸敬辨意", class:"研經班", question:"問4: 歸敬辨意題目A?", options:["選1","選2","選3","選4"], answer:3},
-  {chapter:"因緣分", class:"中級班", question:"問5: 因緣分題目B?", options:["選1","選2","選3","選4"], answer:0}
+// === 資料範例（每題加入 cls 屬性） ===
+const DATA = [
+    {"chapter":"總說","cls":"初級班","question":"《大乘起信論》的作者是誰？","options":["龍樹菩薩","馬鳴菩薩","世親菩薩","玄奘法師"],"answer":2},
+    {"chapter":"總說","cls":"中級班","question":"馬鳴菩薩之所以得名的原因，以下何者正確","options":["彈琴以宣法音，諸馬聞已，咸悉悲鳴","善說法要，能令諸馬悲鳴垂淚，七日不食","出生時母馬悲鳴","名字由來不詳"],"answer":0},
+    {"chapter":"五重玄義","cls":"高級班","question":"何謂「一心三昧」？","options":["禪定三昧","思惟一心無二，成就三種智","三種法門修持","起信論章節之一"],"answer":1},
+    {"chapter":"歸敬辨意","cls":"研經班","question":"「歸敬」的核心意涵是？","options":["敬師尊重佛法","敬經論","供養三寶","信願行三業"],"answer":0},
 ];
 
-let quiz=[], idx=0, correct=0, ansed=[], picked=[];
+// 初始化
+let quiz = [], pos=0, ok=0, history=[];
+const totalTag = document.getElementById('totalTag');
+const posTag = document.getElementById('posTag');
+const okTag = document.getElementById('okTag');
+const qEl = document.getElementById('q');
+const optsEl = document.getElementById('opts');
+const msgEl = document.getElementById('msg');
+const metaEl = document.getElementById('meta');
 
-const q=document.getElementById("q"), opts=document.getElementById("opts"), msg=document.getElementById("msg"),
-meta=document.getElementById("meta"), prev=document.getElementById("prev"), next=document.getElementById("next"),
-reveal=document.getElementById("reveal"), quizBox=document.getElementById("quiz"),
-totalTag=document.getElementById("totalTag"), posTag=document.getElementById("posTag"), okTag=document.getElementById("okTag"),
-resultModal=document.getElementById("resultModal"), rTotal=document.getElementById("rTotal"),
-rCorrect=document.getElementById("rCorrect"), rAcc=document.getElementById("rAcc"),
-rTable=document.getElementById("rTable").querySelector("tbody"), closeResult=document.getElementById("closeResult");
-
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
-
-function getSettings(){
-  const chs=[...document.querySelectorAll(".chap:checked")].map(x=>x.value);
-  const cls=[...document.querySelectorAll(".cls:checked")].map(x=>x.value);
-  let pool=DATA.filter(x=>chs.includes(x.chapter) && cls.includes(x.class));
-  const mode=document.querySelector("input[name=mode]:checked").value;
-  if(mode==="random") shuffle(pool);
-  const lim=document.getElementById("limit").value;
-  if(lim!=="all") pool=pool.slice(0,parseInt(lim));
-  return pool;
+function startQuiz(){
+    const selectedCls = Array.from(document.querySelectorAll('.cls:checked')).map(x=>x.value);
+    const selectedChap = Array.from(document.querySelectorAll('.chap:checked')).map(x=>x.value);
+    quiz = DATA.filter(d => selectedCls.includes(d.cls) && selectedChap.includes(d.chapter));
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    if(mode=='random') quiz.sort(()=>Math.random()-0.5);
+    const limit = document.getElementById('limit').value;
+    if(limit!=='all') quiz = quiz.slice(0, parseInt(limit));
+    pos=0; ok=0; history=[];
+    totalTag.innerHTML = quiz.length;
+    posTag.innerHTML = `0 / ${quiz.length}`;
+    okTag.innerHTML = ok;
+    document.getElementById('quiz').style.display='block';
+    showQuestion();
 }
 
-function start(){
-  quiz=getSettings();
-  if(!quiz.length){alert("所選章節/班別目前沒有題目");return;}
-  idx=0; correct=0; ansed=new Array(quiz.length).fill(null); picked=new Array(quiz.length).fill(null);
-  quizBox.style.display=""; totalTag.textContent=quiz.length;
-  posTag.textContent=`${idx+1} / ${quiz.length}`; okTag.textContent=correct;
-  render();
+function showQuestion(){
+    if(quiz.length==0){ qEl.innerHTML="請先選擇班級與章節"; optsEl.innerHTML=""; metaEl.innerHTML=""; return; }
+    const c = quiz[pos];
+    qEl.innerHTML = c.question;
+    optsEl.innerHTML = '';
+    c.options.forEach((o,i)=>{
+        const btn = document.createElement('div');
+        btn.className='opt';
+        btn.dataset.i=i;
+        btn.innerText = o;
+        btn.onclick = ()=>checkAnswer(i,btn);
+        optsEl.appendChild(btn);
+    });
+    metaEl.innerHTML=`第 ${pos+1} 題 / 班級: ${c.cls} / 章節: ${c.chapter}`;
+    msgEl.innerHTML='';
+    updateTag();
 }
 
-function resetAll(){quiz=[]; idx=0; correct=0; ansed=[]; picked=[]; quizBox.style.display="none";
-totalTag.textContent=0; posTag.textContent="0 / 0"; okTag.textContent=0; msg.textContent="";}
-
-function render(){
-  const t=quiz[idx]; q.textContent=(idx+1)+". "+t.question; meta.textContent="章節："+t.chapter+" 班級："+(t.class||"");
-  opts.innerHTML=""; msg.textContent=""; msg.className="";
-  t.options.forEach((o,i)=>{
-    const b=document.createElement("div");
-    b.className="opt"; b.dataset.i=i+1; b.textContent=o;
-    if(ansed[idx]!==null){
-      b.classList.add("disabled");
-      if(ansed[idx]===i) b.classList.add(ansed[idx]===t.answer? "right":"wrong");
-      if(t.answer===i) b.classList.add("right");
+function checkAnswer(i,el){
+    const c = quiz[pos];
+    const opts = Array.from(optsEl.children);
+    opts.forEach(x=>x.classList.add('disabled'));
+    if(i==c.answer){
+        el.classList.add('right');
+        msgEl.innerHTML='<span class="ok">答對！</span>';
+        ok++;
+    } else {
+        el.classList.add('wrong');
+        opts[c.answer].classList.add('right');
+        msgEl.innerHTML='<span class="bad">答錯！</span>';
     }
-    b.onclick=()=>pick(i);
-    opts.appendChild(b);
-  });
+    history[pos]={your:i,right:c.answer,question:c.question};
+    updateTag();
 }
 
-function pick(i){
-  if(ansed[idx]!==null) return;
-  ansed[idx]=i; picked[idx]=i;
-  if(quiz[idx].answer===i){correct++; msg.textContent="答對了！"; msg.className="ok";}
-  else{msg.textContent="答錯！"; msg.className="bad";}
-  render();
-  okTag.textContent=correct;
+function updateTag(){ 
+    posTag.innerHTML = `${pos+1} / ${quiz.length}`;
+    okTag.innerHTML = ok;
 }
 
-function nav(n){idx+=n; if(idx<0) idx=0; if(idx>=quiz.length) idx=quiz.length-1; posTag.textContent=`${idx+1} / ${quiz.length}`; render();}
-function revealAns(){ansed[idx]=quiz[idx].answer; render(); okTag.textContent=correct;}
-function showResult(){
-  rTotal.textContent=quiz.length; rCorrect.textContent=correct; rAcc.textContent=Math.round(correct/quiz.length*100)+"%";
-  rTable.innerHTML="";
-  quiz.forEach((t,i)=>{
-    if(ansed[i]!==t.answer){
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${i+1}</td><td>${t.question}</td><td>${t.options[picked[i]]||""}</td><td>${t.options[t.answer]}</td>`;
-      rTable.appendChild(tr);
-    }
-  });
-  resultModal.style.display="flex";
+document.getElementById('next').onclick = ()=>{
+    if(pos<quiz.length-1){ pos++; showQuestion(); }
+}
+document.getElementById('prev').onclick = ()=>{
+    if(pos>0){ pos--; showQuestion(); }
+}
+document.getElementById('reveal').onclick = ()=>{
+    const c = quiz[pos];
+    const opts = Array.from(optsEl.children);
+    opts.forEach((x,i)=>{
+        x.classList.add('disabled');
+        if(i==c.answer) x.classList.add('right');
+    });
+}
+document.getElementById('start').onclick=startQuiz;
+document.getElementById('reset').onclick=()=>{
+    document.getElementById('quiz').style.display='none';
+    posTag.innerHTML='0 / 0'; okTag.innerHTML='0'; totalTag.innerHTML='0';
 }
 
-document.getElementById("start").onclick=start;
-document.getElementById("reset").onclick=resetAll;
-prev.onclick=()=>nav(-1); next.onclick=()=>nav(1); reveal.onclick=revealAns; closeResult.onclick=()=>resultModal.style.display="none";
+// 結果畫面
+document.getElementById('closeResult').onclick = ()=>{ document.getElementById('resultModal').style.display='none'; }
 </script>
 </body>
 </html>
