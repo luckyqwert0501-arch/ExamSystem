@@ -1,158 +1,216 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <title>普高精舍禪修班 線上題庫系統</title>
 <style>
-    body { font-family: Arial, sans-serif; background:#fff8f0; color:#5a3e1b; }
-    .btn {
-        padding:10px 14px; margin:4px; border-radius:12px; border:none; cursor:pointer; font-weight:bold;
-    }
-    .btn.primary { background:#ffd699; color:#5a3e1b; }
-    .btn.secondary { background:#fff0d1; color:#5a3e1b; border:1px solid #ffd699; }
-    .btn:hover { opacity:0.85; }
-    #quizDiv { display:none; margin-top:20px; }
-    #question { margin-bottom:12px; font-size:18px; }
-    .answerBtn { display:block; margin:6px 0; padding:8px 12px; border-radius:12px; border:1px solid #ffd699; background:#fff0d1; color:#5a3e1b; cursor:pointer; text-align:left; }
-    .stats { margin-top:12px; font-size:16px; padding:8px 12px; border-radius:12px; background:#fff0d1; border:1px solid #ffd699; display:inline-block; }
+body { font-family: "Microsoft JhengHei", sans-serif; background: #f9f9f9; margin: 20px; }
+h1 { color: #2c3e50; }
+.container { max-width: 800px; margin: auto; }
+.progress-bar { background-color: #ecf0f1; border-radius: 15px; overflow: hidden; margin: 10px 0; }
+.progress { background-color: #3498db; height: 20px; width: 0%; color: white; text-align: center; line-height: 20px; border-radius: 15px; }
+button, select { border-radius: 10px; padding: 10px 20px; border: none; cursor: pointer; }
+button { background-color: #3498db; color: white; margin: 5px; }
+button:hover { background-color: #2980b9; }
+select { background-color: #ecf0f1; color: #2c3e50; }
+label { margin-right: 10px; }
 </style>
 </head>
 <body>
+<div class="container">
+    <h1>普高精舍禪修班 線上題庫系統</h1>
 
-<h2>普高精舍禪修班 線上題庫系統</h2>
+    <!-- 第二行：題目進度 -->
+    <div>
+        <span id="total-questions">共 20 題</span> |
+        <span id="current-question">目前 0 / 0 題</span> |
+        <span id="correct-answers">答對 0 題</span>
+        <div class="progress-bar">
+            <div id="progress" class="progress">0%</div>
+        </div>
+    </div>
 
-<!-- 班級下拉選單 -->
-<label>選擇班級：</label>
-<select id="classSelect" class="btn secondary">
-    <option value="">請選擇班級</option>
-    <option value="初級班">初級班</option>
-    <option value="中級班">中級班</option>
-    <option value="高級班">高級班</option>
-    <option value="研經班">研經班</option>
-</select>
-
-<!-- 題目模式 -->
-<div style="margin-top:10px;">
-    <label class="btn secondary">
-        <input type="radio" name="mode" value="order" checked> 依順序
-    </label>
-    <label class="btn secondary">
-        <input type="radio" name="mode" value="random"> 隨機
-    </label>
-</div>
-
-<!-- 題目數量限制 -->
-<div style="margin-top:10px;">
-    <label class="btn secondary">
-        題數：
-        <select id="limit" class="btn secondary">
-            <option value="all">全部</option>
-            <option value="5">5題</option>
-            <option value="10">10題</option>
-            <option value="15">15題</option>
-            <option value="20">20題</option>
+    <!-- 第三行：題序選擇與題數 -->
+    <div>
+        <label for="quiz-order">題序：</label>
+        <select id="quiz-order">
+            <option value="sequential">依順序</option>
+            <option value="random">隨機</option>
         </select>
-    </label>
-</div>
 
-<!-- 開始測驗按鈕 -->
-<div style="margin-top:10px;">
-    <button id="start" class="btn primary">開始測驗</button>
-</div>
+        <label for="num-questions">題數：</label>
+        <select id="num-questions">
+            <option value="5">5 題</option>
+            <option value="10">10 題</option>
+            <option value="20" selected>20 題</option>
+            <option value="all">全部</option>
+        </select>
 
-<!-- 題目區 -->
-<div id="quizDiv">
-    <div id="question"></div>
-    <div id="answers"></div>
-    <div class="stats" id="stats">參考 0 題，目前 0/0 題，答對 0 題</div>
+        <label for="class-select">班級：</label>
+        <select id="class-select">
+            <option value="beginner">初級班</option>
+            <option value="intermediate">中級班</option>
+            <option value="advanced">高級班</option>
+            <option value="study">研經班</option>
+        </select>
+
+        <button id="start-btn">開始測驗</button>
+    </div>
+
+    <hr>
+
+    <!-- 題目區 -->
+    <div id="quiz-container"></div>
+
 </div>
 
 <script>
-// 普高精舍禪修班 線上題庫系統
-const DATA = {
-    "初級班":[
-        {q:"1+1=?", a:["1","2","3","4"], correct:1},
-        {q:"台灣首都是哪裡?", a:["台北","台中","高雄","台南"], correct:0},
-        {q:"太陽從哪裡升起?", a:["西","東","南","北"], correct:1},
-        {q:"水的化學式?", a:["H2O","CO2","O2","NaCl"], correct:0},
-        {q:"五角星有幾個角?", a:["3","4","5","6"], correct:2},
-        {q:"香蕉是什麼顏色?", a:["紅","黃","綠","藍"], correct:1},
-        {q:"哪個是水果?", a:["馬鈴薯","蘋果","胡蘿蔔","白菜"], correct:1},
-        {q:"貓會叫什麼聲音?", a:["汪汪","喵喵","咩咩","咕咕"], correct:1},
-        {q:"地球是圓的嗎?", a:["是","否","不確定","看心情"], correct:0},
-        {q:"太空中有空氣嗎?", a:["有","沒有","有點","不知道"], correct:1}
+const quizData = {
+    beginner: [
+        { question: "佛教的創始人是誰？", options: ["釋迦牟尼", "老子", "孔子", "耶穌"], answer: "釋迦牟尼" },
+        { question: "四聖諦中的第一諦是什麼？", options: ["苦諦", "集諦", "滅諦", "道諦"], answer: "苦諦" },
+        { question: "佛教的主要經典稱為什麼？", options: ["經藏", "道德經", "論語", "聖經"], answer: "經藏" },
+        { question: "八正道中不包括哪一項？", options: ["正見", "正念", "正勝", "正業"], answer: "正勝" },
+        { question: "佛教的三寶是什麼？", options: ["佛、法、僧", "天、地、人", "身、口、意", "戒、定、慧"], answer: "佛、法、僧" },
+        { question: "佛教的最高境界是什麼？", options: ["涅槃", "天國", "極樂", "羅漢"], answer: "涅槃" },
+        { question: "佛教戒律的主要目的是什麼？", options: ["修身養性", "功名利祿", "增財富", "治國平天下"], answer: "修身養性" },
+        { question: "佛教的主要分支有哪三個？", options: ["上座部、禪宗、淨土宗", "道教、儒教、基督教", "大乘、小乘、密宗", "南傳、北傳、藏傳"], answer: "南傳、北傳、藏傳" },
+        { question: "佛教中重視的慈悲心稱為？", options: ["慈心", "悲心", "慈悲心", "喜心"], answer: "慈悲心" },
+        { question: "佛教四無量心不包括？", options: ["慈", "悲", "喜", "憤"], answer: "憤" },
+        { question: "八苦之一是？", options: ["生、老、病、死", "愛、恨、憎、怨", "貧、富、榮、辱", "喜、怒、哀、樂"], answer: "生、老、病、死" },
+        { question: "佛教中最重要的修行方法之一是？", options: ["禪修", "念書", "打坐", "念經"], answer: "禪修" },
+        { question: "佛教的初學者稱為？", options: ["居士", "比丘", "菩薩", "羅漢"], answer: "居士" },
+        { question: "佛教中“因果”概念是指？", options: ["業報", "天命", "運氣", "神靈"], answer: "業報" },
+        { question: "佛教認為煩惱的根源是？", options: ["貪、瞋、癡", "財、色、名", "愛、恨、欲", "善、惡、無"], answer: "貪、瞋、癡" },
+        { question: "佛教認為人生苦的根本原因是？", options: ["無明", "愛欲", "煩惱", "輪迴"], answer: "無明" },
+        { question: "佛教中的“涅槃”意指？", options: ["超脫生死", "極樂世界", "天國", "心境安寧"], answer: "超脫生死" },
+        { question: "佛教中“三法印”不包括？", options: ["諸行無常", "諸法無我", "涅槃寂靜", "因果報應"], answer: "因果報應" },
+        { question: "佛教中最重視的道德行為是？", options: ["戒", "定", "慧", "禪"], answer: "戒" },
+        { question: "佛教的目的是？", options: ["解脫生死輪迴", "建立國家", "累積財富", "學習知識"], answer: "解脫生死輪迴" }
     ],
-    "中級班":[
-        {q:"光速是多少?", a:["3x10^8 m/s","3x10^6 m/s","3x10^10 m/s","3x10^5 m/s"], correct:0},
-        {q:"水的沸點是多少度C?", a:["90","95","100","105"], correct:2},
-        {q:"地球半徑約多少?", a:["6000km","6400km","7000km","8000km"], correct:1},
-        {q:"中國的首都是?", a:["上海","北京","廣州","香港"], correct:1},
-        {q:"世界最高山?", a:["喜馬拉雅","阿爾卑斯","安第斯","落基山"], correct:0}
+    intermediate: [
+        { question: "大乘佛教強調什麼？", options: ["菩薩道", "比丘戒", "出家生活", "禪修"], answer: "菩薩道" },
+        { question: "佛教三身中的法身是什麼？", options: ["真實佛性", "身體佛像", "幻化身", "人身"], answer: "真實佛性" },
+        { question: "《金剛經》核心思想是？", options: ["般若空性", "戒律嚴謹", "因果報應", "禪修方法"], answer: "般若空性" },
+        { question: "淨土宗主張信仰誰？", options: ["阿彌陀佛", "釋迦牟尼佛", "藥師佛", "文殊菩薩"], answer: "阿彌陀佛" },
+        { question: "禪宗的核心理念是？", options: ["直指人心", "經典研究", "修行戒律", "持咒念佛"], answer: "直指人心" },
+        { question: "佛教中“三業”指？", options: ["身、口、意", "戒、定、慧", "因、果、報", "善、惡、中"], answer: "身、口、意" },
+        { question: "佛教中的“六波羅蜜”不包括？", options: ["布施", "持戒", "忍辱", "禪坐"], answer: "禪坐" },
+        { question: "佛教認為輪迴的根本原因是？", options: ["貪瞋癡", "善行累積", "命運安排", "天意"], answer: "貪瞋癡" },
+        { question: "《法華經》主張誰可以成佛？", options: ["一切眾生", "僧人", "菩薩", "王侯"], answer: "一切眾生" },
+        { question: "佛教“十二因緣”中的第一因是？", options: ["無明", "行", "識", "名色"], answer: "無明" },
+        { question: "佛教中的“菩薩”是指？", options: ["發心救度眾生的人", "出家僧人", "修行禪定者", "凡人"], answer: "發心救度眾生的人" },
+        { question: "《楞嚴經》主要講什麼？", options: ["禪定與心性", "戒律規範", "佛教歷史", "因果故事"], answer: "禪定與心性" },
+        { question: "佛教的“空性”強調？", options: ["萬法無自性", "佛像重要", "經典權威", "業報作用"], answer: "萬法無自性" },
+        { question: "佛教“善業”指？", options: ["利人利己的行為", "功名利祿", "懶惰無為", "求財行為"], answer: "利人利己的行為" },
+        { question: "《華嚴經》的特色是？", options: ["宇宙一體觀", "戒律嚴謹", "禪修方法", "善惡報應"], answer: "宇宙一體觀" },
+        { question: "佛教四聖諦最後一諦是？", options: ["道諦", "苦諦", "集諦", "滅諦"], answer: "道諦" },
+        { question: "佛教中“十二因緣”的最終結果是？", options: ["生死輪迴", "涅槃", "菩薩道", "善行累積"], answer: "生死輪迴" },
+        { question: "佛教“三寶”中，‘法’代表什麼？", options: ["佛陀教法", "僧團", "信徒", "經書"], answer: "佛陀教法" },
+        { question: "禪宗公案的目的是？", options: ["啟發悟性", "修持戒律", "累積福報", "研究經典"], answer: "啟發悟性" },
+        { question: "佛教中“十善業”不包括？", options: ["殺生", "偷盜", "嫉妒", "布施"], answer: "嫉妒" }
     ],
-    "高級班":[
-        {q:"相對論提出者?", a:["牛頓","愛因斯坦","伽利略","哥白尼"], correct:1},
-        {q:"光的波粒二象性提出者?", a:["普朗克","牛頓","愛因斯坦","法拉第"], correct:2},
-        {q:"DNA 雙螺旋模型?", a:["華森&克里克","孟德爾","居里夫人","達爾文"], correct:0},
-        {q:"第一個登月人?", a:["阿姆斯特朗","加加林","柯林斯","艾德林"], correct:0},
-        {q:"化學元素氧符號?", a:["O","C","H","N"], correct:0}
+    advanced: [
+        { question: "中觀派的核心思想是？", options: ["緣起性空", "因果報應", "戒律嚴謹", "菩薩行"], answer: "緣起性空" },
+        { question: "瑜伽行派強調什麼？", options: ["心識唯識", "戒律持守", "布施利他", "禪定修行"], answer: "心識唯識" },
+        { question: "密宗修法的特色是？", options: ["咒語與壇法", "持戒嚴格", "禪定靜坐", "念佛"], answer: "咒語與壇法" },
+        { question: "《涅槃經》強調什麼？", options: ["佛性常住", "生死無常", "因果報應", "布施行善"], answer: "佛性常住" },
+        { question: "菩薩道的六度是？", options: ["布施、持戒、忍辱、精進、禪定、智慧", "布施、禪定、修行、佈施、智慧、忍辱", "持戒、忍辱、禪定、智慧、福報、善行", "布施、精進、慈悲、智慧、忍辱、禪定"], answer: "布施、持戒、忍辱、精進、禪定、智慧" },
+        { question: "佛教密宗的修法三昧是？", options: ["身、語、意三昧", "戒、定、慧", "禪定、布施、忍辱", "慈悲、喜捨、禪定"], answer: "身、語、意三昧" },
+        { question: "《大般涅槃經》的重要教義是？", options: ["常住佛性", "四聖諦", "八正道", "十二因緣"], answer: "常住佛性" },
+        { question: "空性與中道思想的關聯是？", options: ["緣起性空", "因果報應", "戒律嚴格", "福德累積"], answer: "緣起性空" },
+        { question: "大乘佛教強調菩薩行的目的？", options: ["利益一切眾生", "追求個人解脫", "積累福報", "研究經典"], answer: "利益一切眾生" },
+        { question: "佛教中“法身”意指？", options: ["真實佛性", "身體佛像", "幻化身", "人身"], answer: "真實佛性" },
+        { question: "《華嚴經》的核心思想？", options: ["一切法互相依存", "因果報應", "戒律嚴格", "修禪方法"], answer: "一切法互相依存" },
+        { question: "佛教中“十地菩薩”指？", options: ["菩薩修行十階段", "佛教經典十卷", "十種戒律", "十方佛"], answer: "菩薩修行十階段" },
+        { question: "密宗修法的傳承方式是？", options: ["上師傳授", "自我修行", "經典自讀", "大眾講解"], answer: "上師傳授" },
+        { question: "中觀派與唯識派的主要差異？", options: ["空性 vs 唯識", "戒律 vs 禪定", "布施 vs 忍辱", "因果 vs 福報"], answer: "空性 vs 唯識" },
+        { question: "佛教中“空”與“無我”概念的差別？", options: ["空是現象無自性，無我是無固定我", "空是無我，無我是現象無性", "空與無我相同", "空與無我無關"], answer: "空是現象無自性，無我是無固定我" },
+        { question: "佛教大乘經典不包括？", options: ["般若經", "華嚴經", "金剛經", "道德經"], answer: "道德經" },
+        { question: "密宗壇城的用途？", options: ["修法與觀想", "經典閱讀", "戒律修持", "行善積德"], answer: "修法與觀想" },
+        { question: "佛教禪宗公案的目的？", options: ["啟發悟性", "戒律遵守", "累積福報", "修行方法"], answer: "啟發悟性" },
+        { question: "菩薩行六度中的“忍辱”指？", options: ["忍耐與寬容", "布施與智慧", "禪定與慈悲", "修行與持戒"], answer: "忍耐與寬容" },
+        { question: "中觀派認為世界的本質是？", options: ["緣起性空", "實有", "善惡報應", "菩薩心"], answer: "緣起性空" }
     ],
-    "研經班":[
-        {q:"佛教四聖諦順序是?", a:["苦集滅道","道集滅苦","滅苦集道","集苦道滅"], correct:0},
-        {q:"八正道包括哪一項?", a:["正見","正睡","正玩","正煮"], correct:0},
-        {q:"佛教輪迴概念?", a:["生死","遊戲","工作","考試"], correct:0},
-        {q:"佛陀原名?", a:["悉達多","阿難","迦葉","摩訶"], correct:0},
-        {q:"佛教三寶是?", a:["佛法僧","天地人","日月星","風火水"], correct:0}
+    study: [
+        { question: "研經班重點在？", options: ["深入經典研讀", "基礎禪修", "初學佛教知識", "社會服務"], answer: "深入經典研讀" },
+        { question: "佛教三藏不包括？", options: ["律藏", "經藏", "論藏", "道藏"], answer: "道藏" },
+        { question: "《大智度論》的主題是？", options: ["菩薩行與智慧", "禪修方法", "戒律守持", "生活倫理"], answer: "菩薩行與智慧" },
+        { question: "《成唯識論》主要講什麼？", options: ["唯識學說", "四聖諦", "八正道", "因果報應"], answer: "唯識學說" },
+        { question: "《華嚴經》描述的宇宙觀是？", options: ["一切法相即佛法界", "人生苦樂", "戒律規範", "禪修次第"], answer: "一切法相即佛法界" },
+        { question: "佛教論藏主要用途是？", options: ["闡述教義", "修持禪定", "進行儀式", "布施行善"], answer: "闡述教義" },
+        { question: "研經班常研讀的經典是？", options: ["般若經、華嚴經、涅槃經", "金剛經、法華經、道德經", "論語、孟子、禮記", "聖經、可蘭經、奧義書"], answer: "般若經、華嚴經、涅槃經" },
+        { question: "佛教中“十地菩薩”強調？", options: ["菩薩修行十階段", "出家生活", "戒律守持", "禪定修行"], answer: "菩薩修行十階段" },
+        { question: "《法華經》主張？", options: ["一切眾生皆可成佛", "僧人專修成佛", "菩薩才能成佛", "王侯貴族可成佛"], answer: "一切眾生皆可成佛" },
+        { question: "《涅槃經》的核心教義？", options: ["佛性常住", "生死無常", "四聖諦", "八正道"], answer: "佛性常住" },
+        { question: "《阿含經》的特色？", options: ["記錄佛陀原始教法", "禪修方法", "菩薩行次第", "論藏解釋"], answer: "記錄佛陀原始教法" },
+        { question: "《楞嚴經》重點在？", options: ["禪定與心性", "戒律規範", "因果報應", "布施行善"], answer: "禪定與心性" },
+        { question: "研經班修習“三藏”目的是？", options: ["理解佛教全貌", "累積福報", "參加儀式", "禪定修行"], answer: "理解佛教全貌" },
+        { question: "《金剛經》核心思想？", options: ["般若空性", "戒律嚴謹", "因果報應", "禪定方法"], answer: "般若空性" },
+        { question: "《大乘起信論》強調？", options: ["一心法界", "修戒持戒", "布施行善", "禪定"], answer: "一心法界" },
+        { question: "研經班修習經論的目的？", options: ["增進智慧與理解佛法", "積累福報", "禪修靜坐", "布施"], answer: "增進智慧與理解佛法" },
+        { question: "研經班研究《成唯識論》的目的？", options: ["掌握唯識學說", "累積功德", "修持戒律", "布施行善"], answer: "掌握唯識學說" },
+        { question: "研經班深入探討《華嚴經》意涵？", options: ["理解一切法界與菩薩行", "戒律守持", "禪修方法", "布施功德"], answer: "理解一切法界與菩薩行" },
+        { question: "研經班研究《大智度論》重點？", options: ["菩薩行與智慧方法", "修戒禪定", "布施功德", "儀式法會"], answer: "菩薩行與智慧方法" },
+        { question: "研經班目標？", options: ["深入理解佛教經典", "初學佛法", "修行禪定", "布施行善"], answer: "深入理解佛教經典" }
     ]
 };
 
-let QUIZ=[], pos=0, correct=0, userAns=[];
+// 以下 JS 程式碼可處理開始測驗、題序設定、題數限制、進度更新
+let currentQuiz = [];
+let currentIndex = 0;
+let score = 0;
 
-const quizDiv=document.getElementById("quizDiv");
-const questionDiv=document.getElementById("question");
-const answersDiv=document.getElementById("answers");
-const statsDiv=document.getElementById("stats");
+const startBtn = document.getElementById("start-btn");
+const quizContainer = document.getElementById("quiz-container");
+const totalQuestionsEl = document.getElementById("total-questions");
+const currentQuestionEl = document.getElementById("current-question");
+const correctAnswersEl = document.getElementById("correct-answers");
+const progressEl = document.getElementById("progress");
 
-function renderQuestion(){
-    if(pos>=QUIZ.length){
-        questionDiv.innerHTML="測驗結束！";
-        answersDiv.innerHTML="";
+startBtn.addEventListener("click", () => {
+    const selectedClass = document.getElementById("class-select").value;
+    const order = document.getElementById("quiz-order").value;
+    const num = document.getElementById("num-questions").value;
+    currentQuiz = [...quizData[selectedClass]];
+
+    if(order === "random") currentQuiz.sort(() => Math.random() - 0.5);
+    if(num !== "all") currentQuiz = currentQuiz.slice(0, parseInt(num));
+
+    currentIndex = 0;
+    score = 0;
+    totalQuestionsEl.textContent = `共 ${currentQuiz.length} 題`;
+    correctAnswersEl.textContent = `答對 0 題`;
+    showQuestion();
+});
+
+function showQuestion() {
+    if(currentIndex >= currentQuiz.length){
+        quizContainer.innerHTML = `<h3>測驗結束！總分：${score} / ${currentQuiz.length}</h3>`;
+        progressEl.style.width = `100%`;
+        progressEl.textContent = `100%`;
+        currentQuestionEl.textContent = `目前 ${currentIndex} / ${currentQuiz.length} 題`;
         return;
     }
-    let q=QUIZ[pos];
-    questionDiv.innerHTML=(pos+1)+". "+q.q;
-    answersDiv.innerHTML="";
-    q.a.forEach((ans,i)=>{
-        let btn=document.createElement("button");
-        btn.className="answerBtn";
-        btn.textContent=ans;
-        btn.onclick=()=>checkAnswer(i);
-        answersDiv.appendChild(btn);
+
+    const q = currentQuiz[currentIndex];
+    let optionsHtml = "";
+    q.options.forEach(opt => {
+        optionsHtml += `<button onclick="checkAnswer('${opt}')">${opt}</button><br>`;
     });
-    statsDiv.textContent=`參考 ${QUIZ.length} 題，目前 ${pos}/${QUIZ.length} 題，答對 ${correct} 題`;
+
+    quizContainer.innerHTML = `<h3>Q${currentIndex + 1}: ${q.question}</h3>${optionsHtml}`;
+    currentQuestionEl.textContent = `目前 ${currentIndex + 1} / ${currentQuiz.length} 題`;
+    progressEl.style.width = `${Math.round((currentIndex/currentQuiz.length)*100)}%`;
+    progressEl.textContent = `${Math.round((currentIndex/currentQuiz.length)*100)}%`;
 }
 
-function checkAnswer(idx){
-    if(idx===QUIZ[pos].correct) correct++;
-    userAns.push(idx);
-    pos++;
-    renderQuestion();
+function checkAnswer(ans){
+    if(ans === currentQuiz[currentIndex].answer) score++;
+    correctAnswersEl.textContent = `答對 ${score} 題`;
+    currentIndex++;
+    showQuestion();
 }
-
-document.getElementById("start").onclick=()=>{
-    const selectedClass=document.getElementById("classSelect").value;
-    if(!selectedClass){ alert("請選擇班級"); return; }
-    QUIZ=[];
-    QUIZ=QUIZ.concat(DATA[selectedClass]);
-    const mode=document.querySelector('input[name="mode"]:checked').value;
-    if(mode==="random") QUIZ=QUIZ.sort(()=>Math.random()-0.5);
-    const limit=document.getElementById("limit").value;
-    if(limit!=="all") QUIZ=QUIZ.slice(0,parseInt(limit));
-    pos=0; correct=0; userAns=[];
-    quizDiv.style.display="block";
-    renderQuestion();
-};
 </script>
-
 </body>
 </html>
-
