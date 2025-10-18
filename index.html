@@ -5,61 +5,57 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>普高精舍禪修班 線上題庫系統</title>
 <style>
-:root{
-  --bg:#fff8e1;
-  --card:#fff3e0;
-  --accent:#2e7d32;
-  --accent-2:#81c784;
-  --muted:#3e2723;
-  --soft:#ffcc80;
-  --radius:12px;
-}
-html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:"Noto Sans TC","PingFang TC",sans-serif;color:var(--muted);}
-.container{max-width:980px;margin:20px auto;padding:16px;}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 20px rgba(0,0,0,.08);padding:20px;}
-h1{margin:0 0 8px;font-size:1.4rem}
-.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.tag,.badge{background:#ffe0b2;border-radius:10px;padding:8px 12px;font-weight:600}
-.badge{background:transparent;border:1px solid rgba(0,0,0,0.06);font-weight:600}
-.controls{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.control-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-label.inline{display:flex;align-items:center;gap:8px}
-select, .radio-group, .btn, .small-btn{
-  border-radius:10px;border:1px solid rgba(0,0,0,0.06);padding:10px;background:#fff;box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)
-}
-select{min-width:160px}
-/* 出題順序按鈕水平排列 */
-.mode-buttons{display:flex;flex-direction:row;gap:8px}
-.mode-buttons button{background:var(--card);border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:10px;text-align:left;cursor:pointer}
-.mode-buttons button.active{background:var(--accent);color:white;border-color:var(--accent);box-shadow:0 6px 18px rgba(46,125,50,0.12)}
-.actions{display:flex;gap:10px;flex-wrap:wrap}
-.btn.primary{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;box-shadow:0 8px 20px rgba(46,125,50,0.12)}
-.btn.secondary{background:#fff;border:1px solid rgba(0,0,0,0.06);padding:10px 14px;border-radius:10px;cursor:pointer}
-#quiz{margin-top:18px;display:none}
-#meta{color:rgba(0,0,0,0.6);margin-bottom:6px}
-#q{font-size:1.1rem;margin:6px 0 12px}
-#opts{display:flex;flex-direction:column;gap:8px}
-.opt{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);cursor:pointer;background:#fff;transition:all .12s;box-shadow:0 4px 10px rgba(0,0,0,0.03)}
-.opt:hover{transform:translateY(-2px)}
-.opt.disabled{pointer-events:none;opacity:.9}
-.opt.right{background:linear-gradient(90deg,var(--accent-2),#e8f5e9);border-color:var(--accent-2);box-shadow:0 6px 18px rgba(129,199,132,0.12)}
-.opt.wrong{background:linear-gradient(90deg,#ffebee,#ffcdd2);border-color:#ef9a9a;box-shadow:0 6px 18px rgba(239,154,154,0.08)}
-#msg{margin-top:8px;font-weight:700}
-.pager{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-.small-btn{padding:8px 12px;background:#fff;border:1px solid rgba(0,0,0,0.06);cursor:pointer}
-#resultModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);padding:20px}
-.result-card{background:var(--card);padding:18px;border-radius:12px;max-width:900px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
-.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-.kpi{background:#fff8e1;padding:12px;border-radius:10px;border:1px solid var(--soft);font-weight:700}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{border:1px solid rgba(0,0,0,0.06);padding:8px;text-align:left;background:#fff}
-@media (max-width:640px){
-  .container{padding:10px}
-  .card{padding:14px}
-  .control-row{flex-direction:column;align-items:stretch}
-  .mode-buttons{flex-direction:row}
-  .result-grid{grid-template-columns:1fr}
-}
+  :root{
+    --bg:#fff8e1;
+    --card:#fff3e0;
+    --accent:#2e7d32;
+    --accent-2:#81c784;
+    --muted:#3e2723;
+    --soft:#ffcc80;
+    --radius:12px;
+  }
+  html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:"Noto Sans TC","PingFang TC",sans-serif;color:var(--muted);}
+  .container{max-width:980px;margin:20px auto;padding:16px;}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 20px rgba(0,0,0,.08);padding:20px;}
+  h1{margin:0 0 8px;font-size:1.4rem}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .tag,.badge{background:#ffe0b2;border-radius:10px;padding:8px 12px;font-weight:600}
+  .badge{background:transparent;border:1px solid rgba(0,0,0,0.06);font-weight:600}
+  .controls{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+  .control-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  label.inline{display:flex;align-items:center;gap:8px}
+  select, .btn, .small-btn{border-radius:10px;border:1px solid rgba(0,0,0,0.06);padding:10px;background:#fff;box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)}
+  select{min-width:160px}
+  .mode-buttons{display:flex;gap:8px} /* 水平排列 */
+  .mode-buttons button{background:var(--card);border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:10px;cursor:pointer}
+  .mode-buttons button.active{background:var(--accent);color:white;border-color:var(--accent);box-shadow:0 6px 18px rgba(46,125,50,0.12)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn.primary{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;box-shadow:0 8px 20px rgba(46,125,50,0.12)}
+  .btn.secondary{background:#fff;border:1px solid rgba(0,0,0,0.06);padding:10px 14px;border-radius:10px;cursor:pointer}
+  #quiz{margin-top:18px;display:none}
+  #meta{color:rgba(0,0,0,0.6);margin-bottom:6px}
+  #q{font-size:1.1rem;margin:6px 0 12px}
+  #opts{display:flex;flex-direction:column;gap:8px}
+  .opt{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);cursor:pointer;background:#fff;transition:all .12s;box-shadow:0 4px 10px rgba(0,0,0,0.03)}
+  .opt:hover{transform:translateY(-2px)}
+  .opt.disabled{pointer-events:none;opacity:.9}
+  .opt.right{background:linear-gradient(90deg,var(--accent-2),#e8f5e9);border-color:var(--accent-2);box-shadow:0 6px 18px rgba(129,199,132,0.12)}
+  .opt.wrong{background:linear-gradient(90deg,#ffebee,#ffcdd2);border-color:#ef9a9a;box-shadow:0 6px 18px rgba(239,154,154,0.08)}
+  #msg{margin-top:8px;font-weight:700}
+  .pager{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .small-btn{padding:8px 12px;background:#fff;border:1px solid rgba(0,0,0,0.06);cursor:pointer}
+  #resultModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);padding:20px}
+  .result-card{background:var(--card);padding:18px;border-radius:12px;max-width:900px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+  .result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .kpi{background:#fff8e1;padding:12px;border-radius:10px;border:1px solid var(--soft);font-weight:700}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border:1px solid rgba(0,0,0,0.06);padding:8px;text-align:left;background:#fff}
+  @media (max-width:640px){
+    .container{padding:10px}
+    .card{padding:14px}
+    .control-row{flex-direction:column;align-items:stretch}
+    .result-grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -71,6 +67,7 @@ select{min-width:160px}
       <div class="badge">目前：<b id="posTag">0 / 0</b></div>
       <div class="badge">已答對：<b id="okTag">0</b></div>
     </div>
+
     <div class="controls">
       <div class="control-row">
         <label class="inline"><strong>班級：</strong></label>
@@ -81,6 +78,7 @@ select{min-width:160px}
           <option value="研經班">研經班</option>
         </select>
       </div>
+
       <div class="control-row">
         <label class="inline"><strong>題數：</strong></label>
         <select id="limit" aria-label="題數選擇">
@@ -91,6 +89,7 @@ select{min-width:160px}
           <option value="20" selected>20</option>
         </select>
       </div>
+
       <div class="control-row">
         <label class="inline"><strong>出題順序：</strong></label>
         <div class="mode-buttons" role="radiogroup" aria-label="出題順序">
@@ -98,12 +97,15 @@ select{min-width:160px}
           <button id="modeRnd" data-mode="random" role="radio" aria-checked="false">隨機</button>
         </div>
       </div>
+
       <div class="control-row actions">
         <button id="start" class="btn primary">開始作答</button>
         <button id="reset" class="btn secondary">重置</button>
       </div>
     </div>
+
     <hr/>
+
     <div id="quiz" aria-live="polite">
       <div id="meta"></div>
       <h3 id="q"></h3>
@@ -117,6 +119,7 @@ select{min-width:160px}
     </div>
   </div>
 </div>
+
 <div id="resultModal" role="dialog" aria-modal="true">
   <div class="result-card">
     <h3>作答結果</h3>
@@ -137,149 +140,158 @@ select{min-width:160px}
 </div>
 
 <script>
-// ---------------- 題庫範例 ----------------
-const DATA={
+const DATA = {
   "初級班":[
-    {question:"佛教的創始人是誰？",options:["釋迦牟尼","老子","孔子","達摩"],answer:1},
-    {question:"佛教四聖諦中，苦諦的內容是？",options:["人生有苦","人生無常","一切皆空","修行得道"],answer:1},
-    {question:"佛教八正道的第一正道是？",options:["正見","正思惟","正語","正業"],answer:1},
-    {question:"佛教三寶指的是？",options:["佛、法、僧","佛、經、法","佛、菩薩、經","佛、僧、戒"],answer:1},
-    {question:"佛教五戒中的第一戒是？",options:["不殺生","不偷盜","不邪淫","不妄語"],answer:1}
-  ],
-  "中級班":[
-    {question:"般若波羅蜜多的意思是？",options:["智慧的完成","慈悲無量","禪定境界","解脫之道"],answer:1},
-    {question:"佛教的根本經典《金剛經》主要講什麼？",options:["空性智慧","因果報應","禪定方法","佛像崇拜"],answer:1}
-  ],
-  "高級班":[
-    {question:"《華嚴經》中提到的十玄門是？",options:["佛法十門","修行十法","智慧十觀","十種禪門"],answer:1}
-  ],
-  "研經班":[
-    {question:"《法華經》的主要思想是？",options:["一乘佛法","二乘佛法","多乘佛法","禪宗教義"],answer:1}
+    {"question":"佛教三寶是指什麼？","options":["佛、法、僧","佛、法、道","佛、菩薩、僧","佛、禪、僧"],"answer":1},
+    {"question":"四聖諦第一諦是？","options":["苦諦","集諦","滅諦","道諦"],"answer":1},
+    {"question":"八正道的第一條是？","options":["正見","正思惟","正語","正業"],"answer":1},
+    {"question":"佛陀的原名是？","options":["悉達多","釋迦","阿難","摩訶"],"answer":1},
+    {"question":"佛教的根本經典為？","options":["大藏經","金剛經","法華經","阿含經"],"answer":4},
+    {"question":"佛教的核心理念是？","options":["慈悲喜捨","因果報應","禪定修行","無常無我"],"answer":4},
+    {"question":"八苦包括何者？","options":["生老病死等八種苦","生死苦","財富痛苦","一切痛苦"],"answer":1},
+    {"question":"佛教修行者稱為？","options":["出家人","居士","比丘","以上皆是"],"answer":4},
+    {"question":"禪宗最重視什麼？","options":["打坐","念佛","誦經","布施"],"answer":1},
+    {"question":"佛陀出生地在哪裡？","options":["藍毗尼","鹿野苑","菩提樹下","拘薩羅"],"answer":1},
+    {"question":"佛教主要的修行目的為？","options":["成佛","長壽","修福報","積功德"],"answer":1},
+    {"question":"佛教五戒不包括？","options":["不殺生","不偷盜","不飲酒","不食肉"],"answer":4},
+    {"question":"佛教的最高境界是？","options":["涅槃","阿羅漢","菩薩","悟道"],"answer":1},
+    {"question":"小乘佛教又稱？","options":["上座部佛教","大乘佛教","禪宗","密宗"],"answer":1},
+    {"question":"大乘佛教主要經典為？","options":["般若經","阿含經","四十二章經","金剛經"],"answer":1},
+    {"question":"佛教禪修的主要目的是？","options":["覺悟","祈福","消災","修行功德"],"answer":1},
+    {"question":"佛教的因果法則稱為？","options":["業","命運","福報","道"],"answer":1},
+    {"question":"佛教稱時間無常為？","options":["無常","無我","涅槃","空"],"answer":1},
+    {"question":"佛教中‘空’的含義？","options":["無自性","沒有佛","空間","無物"],"answer":1},
+    {"question":"佛教重要節日‘佛誕日’是？","options":["四月八日","五月初五","七月十五","八月十五"],"answer":1}
   ]
+  // 可以依需求加上中級班、高級班、研經班題庫
 };
 
-// ---------------- 變數 ----------------
+/* ---------- 變數 ---------- */
 let currentClass = document.getElementById('classSelect').value;
 let questions = [];
 let qIndex = 0;
 let correctCount = 0;
 let answered = [];
 
-// ---------------- 工具函式 ----------------
-function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];}}
+/* ---------- 工具函式 ---------- */
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+  return array;
+}
 
-// ---------------- mode 按鈕 ----------------
-const modeSeqBtn = document.getElementById('modeSeq');
-const modeRndBtn = document.getElementById('modeRnd');
-function setModeVisual(mode){
-  if(mode==='sequential'){
-    modeSeqBtn.classList.add('active'); modeSeqBtn.setAttribute('aria-checked','true');
-    modeRndBtn.classList.remove('active'); modeRndBtn.setAttribute('aria-checked','false');
-  } else {
-    modeRndBtn.classList.add('active'); modeRndBtn.setAttribute('aria-checked','true');
-    modeSeqBtn.classList.remove('active'); modeSeqBtn.setAttribute('aria-checked','false');
+/* ---------- 題庫載入 ---------- */
+function loadClass(cls){
+  currentClass=cls;
+  questions = [...DATA[cls]];
+  const limit=document.getElementById('limit').value;
+  if(limit!=='all') questions=questions.slice(0,Number(limit));
+  const mode=document.querySelector('.mode-buttons .active').dataset.mode;
+  if(mode==='random') shuffle(questions);
+  qIndex=0; correctCount=0; answered=[];
+  document.getElementById('totalTag').innerText=questions.length;
+  document.getElementById('posTag').innerText=`0 / ${questions.length}`;
+  document.getElementById('okTag').innerText=0;
+  if(questions.length>0){
+    document.getElementById('quiz').style.display='block';
+    showQuestion();
   }
 }
-modeSeqBtn.addEventListener('click',()=>{ setModeVisual('sequential'); });
-modeRndBtn.addEventListener('click',()=>{ setModeVisual('random'); });
 
-// ---------------- 載入題庫 ----------------
-function loadClass(cls){
-  currentClass = cls;
-  questions = DATA[cls].map(q=>({...q, options:[...q.options]}));
-  const limit = document.getElementById('limit').value;
-  if(limit !== 'all'){const n=parseInt(limit); if(n<questions.length) questions=questions.slice(0,n);}
-  if(modeRndBtn.classList.contains('active')) shuffle(questions);
-  qIndex=0; correctCount=0; answered=Array(questions.length).fill(null);
-  document.getElementById('totalTag').innerText=questions.length;
-  document.getElementById('quiz').style.display='';
-  renderQuestion();
-  updateMeta();
-}
-
-// ---------------- 顯示題目 ----------------
-function renderQuestion(){
-  if(!questions.length) return;
-  const cur=questions[qIndex];
-  document.getElementById('q').innerText=`${qIndex+1}. ${cur.question}`;
-  document.getElementById('meta').innerText=`班級：${currentClass}  •  題數 ${questions.length}`;
+/* ---------- 顯示題目 ---------- */
+function showQuestion(){
+  const q=questions[qIndex];
+  document.getElementById('meta').innerText=`第 ${qIndex+1} 題`;
+  document.getElementById('q').innerText=q.question;
   const opts=document.getElementById('opts'); opts.innerHTML='';
-  cur.options.forEach((opt,i)=>{
-    const div=document.createElement('div');
-    div.className='opt'+(answered[qIndex]!==null?' disabled':'');
-    div.setAttribute('role','button'); div.setAttribute('tabindex','0'); div.innerText=`${i+1}. ${opt}`;
-    div.addEventListener('click',()=>choose(i));
-    div.addEventListener('keydown',(e)=>{if(e.key==='Enter') choose(i);});
-    opts.appendChild(div);
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement('div');
+    b.className='opt';
+    b.innerText=opt;
+    b.dataset.idx=i+1;
+    b.addEventListener('click',()=>selectAnswer(i+1));
+    opts.appendChild(b);
   });
   document.getElementById('msg').innerText='';
-  document.getElementById('prev').disabled=(qIndex===0);
-  document.getElementById('next').disabled=(answered[qIndex]===null);
-  updateMeta();
 }
 
-// ---------------- 選答案 ----------------
-function choose(i){
-  const cur=questions[qIndex];
-  if(answered[qIndex]!==null) return;
-  answered[qIndex]=i;
-  const optsDiv=document.getElementById('opts');
-  Array.from(optsDiv.children).forEach((btn,idx)=>{
-    btn.classList.add('disabled');
-    if(idx+1===cur.answer) btn.classList.add('right');
-    if(idx===i && (i+1)!==cur.answer) btn.classList.add('wrong');
-  });
-  if(i+1===cur.answer){correctCount++; document.getElementById('msg').innerText='答對了！'; document.getElementById('msg').style.color='var(--accent)';}
-  else{document.getElementById('msg').innerText=`答錯了，正確答案：${cur.answer}、${cur.options[cur.answer-1]}`; document.getElementById('msg').style.color='#b71c1c';}
-  document.getElementById('okTag').innerText=correctCount;
-  document.getElementById('posTag').innerText=`${qIndex+1} / ${questions.length}`;
-  document.getElementById('next').disabled=false;
-}
-
-// ---------------- Meta 更新 ----------------
-function updateMeta(){
+/* ---------- 選擇答案 ---------- */
+function selectAnswer(idx){
+  const q=questions[qIndex];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  answered[qIndex]=idx;
+  if(idx===q.answer){
+    opts[idx-1].classList.add('right');
+    correctCount++;
+    document.getElementById('msg').innerText='答對！';
+  } else {
+    opts[idx-1].classList.add('wrong');
+    opts[q.answer-1].classList.add('right');
+    document.getElementById('msg').innerText='答錯';
+  }
   document.getElementById('posTag').innerText=`${qIndex+1} / ${questions.length}`;
   document.getElementById('okTag').innerText=correctCount;
 }
 
-// ---------------- Pager ----------------
-document.getElementById('prev').addEventListener('click',()=>{if(qIndex>0){qIndex--; renderQuestion();}});
-document.getElementById('next').addEventListener('click',()=>{if(qIndex<questions.length-1){qIndex++; renderQuestion();} else{showResult();}});
-document.getElementById('reveal').addEventListener('click',()=>{
-  const cur=questions[qIndex];
-  const optsDiv=document.getElementById('opts');
-  Array.from(optsDiv.children).forEach((btn,idx)=>{
-    btn.classList.add('disabled');
-    if(idx+1===cur.answer) btn.classList.add('right');
-  });
+/* ---------- 翻頁 ---------- */
+document.getElementById('next').addEventListener('click',()=>{
+  if(qIndex<questions.length-1){ qIndex++; showQuestion(); } else showResult();
 });
+document.getElementById('prev').addEventListener('click',()=>{
+  if(qIndex>0){ qIndex--; showQuestion(); }
+});
+document.getElementById('reveal').addEventListener('click',()=>{ showAnswer(); });
+function showAnswer(){
+  const q=questions[qIndex];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>{
+    o.classList.add('disabled');
+    if(Number(o.dataset.idx)===q.answer) o.classList.add('right');
+  });
+}
 
-// ---------------- Result ----------------
+/* ---------- 結果 ---------- */
 function showResult(){
+  document.getElementById('resultModal').style.display='flex';
   document.getElementById('rTotal').innerText=questions.length;
   document.getElementById('rCorrect').innerText=correctCount;
-  document.getElementById('rAcc').innerText=((correctCount/questions.length)*100).toFixed(1)+'%';
-  const tbody=document.getElementById('rTable').querySelector('tbody');
-  tbody.innerHTML='';
+  document.getElementById('rAcc').innerText=Math.round(correctCount/questions.length*100)+'%';
+  const tbody=document.querySelector('#rTable tbody'); tbody.innerHTML='';
   questions.forEach((q,i)=>{
-    if(answered[i]!==q.answer-1){
+    if(answered[i]!==q.answer){
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${i+1}</td><td>${q.question}</td><td>${answered[i]!==null?q.options[answered[i]]:'未作答'}</td><td>${q.options[q.answer-1]}</td>`;
+      tr.innerHTML=`<td>${i+1}</td><td>${q.question}</td><td>${q.options[(answered[i]||0)-1]||''}</td><td>${q.options[q.answer-1]}</td>`;
       tbody.appendChild(tr);
     }
   });
-  document.getElementById('resultModal').style.display='flex';
 }
-document.getElementById('closeResult').addEventListener('click',()=>{document.getElementById('resultModal').style.display='none';});
+document.getElementById('closeResult').addEventListener('click',()=>{ document.getElementById('resultModal').style.display='none'; });
 
-// ---------------- Start & Reset ----------------
-document.getElementById('start').addEventListener('click',()=>{loadClass(document.getElementById('classSelect').value);});
+/* ---------- 出題順序切換 ---------- */
+document.querySelectorAll('.mode-buttons button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-buttons button').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-checked','false'); });
+    btn.classList.add('active'); btn.setAttribute('aria-checked','true');
+    loadClass(currentClass);
+  });
+});
+
+/* ---------- 開始 & 重置 & 自動更新 ---------- */
+document.getElementById('start').addEventListener('click',()=>{ loadClass(document.getElementById('classSelect').value); });
 document.getElementById('reset').addEventListener('click',()=>{
   document.getElementById('quiz').style.display='none';
   document.getElementById('totalTag').innerText=0;
   document.getElementById('posTag').innerText='0 / 0';
   document.getElementById('okTag').innerText=0;
+  qIndex=0; correctCount=0; answered=[];
 });
+
+document.getElementById('classSelect').addEventListener('change',()=>{ loadClass(document.getElementById('classSelect').value); });
+document.getElementById('limit').addEventListener('change',()=>{ loadClass(document.getElementById('classSelect').value); });
+
 </script>
 </body>
 </html>
